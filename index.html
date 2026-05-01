@@ -419,6 +419,102 @@
     color: var(--green-light); text-decoration: none;
   }
 
+  /* ── DEMO ── */
+  #demo {
+    padding: 7rem 3rem;
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+  #demo::before {
+    content: '';
+    position: absolute; bottom: -20%; left: -10%;
+    width: 45vw; height: 45vw;
+    border-radius: 50%;
+    background: var(--green-mid); opacity: 0.2;
+    pointer-events: none;
+  }
+  .demo-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+  #demo .section-eyebrow { color: var(--green-light); }
+  #demo .section-eyebrow::after { background: var(--green-light); opacity: 0.3; }
+  #demo .section-title { color: var(--cream); }
+  #demo .section-title em { color: var(--green-light); }
+  #demo p.demo-sub {
+    font-size: 0.95rem; font-weight: 300; color: rgba(244,240,232,0.6);
+    max-width: 520px; line-height: 1.8; margin-bottom: 3rem;
+  }
+ 
+  .demo-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 4rem;
+    align-items: start;
+  }
+ 
+  .demo-frame-wrap {
+    position: relative;
+  }
+  .demo-frame-glow {
+    position: absolute;
+    inset: -24px;
+    background: var(--green-light);
+    filter: blur(60px);
+    opacity: 0.12;
+    border-radius: 32px;
+    pointer-events: none;
+  }
+  .demo-phone-outer {
+    position: relative;
+    background: #0D1F18;
+    border-radius: 44px;
+    padding: 14px;
+    box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.07);
+    max-width: 340px;
+    margin: 0 auto;
+  }
+  .demo-phone-notch {
+    width: 80px; height: 22px;
+    background: #0D1F18;
+    border-radius: 0 0 14px 14px;
+    margin: 0 auto 6px;
+    position: relative; z-index: 2;
+  }
+  .demo-iframe-shell {
+    border-radius: 32px;
+    overflow: hidden;
+    background: #F3F4F6;
+    position: relative;
+  }
+  .demo-iframe-shell iframe {
+    width: 100%;
+    height: 680px;
+    border: none;
+    display: block;
+    border-radius: 32px;
+  }
+ 
+  .demo-hints { display: flex; flex-direction: column; gap: 1.5rem; padding-top: 1rem; }
+  .hint-card {
+    background: rgba(244,240,232,0.05);
+    border: 1px solid rgba(244,240,232,0.1);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .hint-card:hover { background: rgba(244,240,232,0.08); border-color: rgba(82,183,136,0.4); }
+  .hint-step {
+    font-size: 0.68rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--green-light); margin-bottom: 0.4rem;
+  }
+  .hint-title { font-size: 0.95rem; font-weight: 500; color: var(--cream); margin-bottom: 0.3rem; }
+  .hint-desc { font-size: 0.82rem; font-weight: 300; color: rgba(244,240,232,0.55); line-height: 1.65; }
+ 
+  @media (max-width: 900px) {
+    .demo-layout { grid-template-columns: 1fr; }
+    .demo-hints { flex-direction: row; flex-wrap: wrap; }
+    .hint-card { flex: 1 1 200px; }
+  }
+
   /* ── ANIMATIONS ── */
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(28px); }
@@ -446,7 +542,10 @@
 
 <nav>
   <a class="nav-logo" href="#">Boost Your Community</a>
-  <a class="nav-cta" href="https://github.com/roopa-srinivas/BoostYourCommunity" target="_blank">View on GitHub →</a>
+  <div style="display:flex;gap:0.75rem;align-items:center;">
+     <a class="nav-cta" href="#demo" style="border-color:rgba(82,183,136,0.5);color:var(--green-light);">Try Demo</a>
+     <a class="nav-cta" href="https://github.com/roopa-srinivas/BoostYourCommunity" target="_blank">View on GitHub →</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -588,6 +687,55 @@
       <div class="tech-pill"><span>📍</span> Leaflet.markercluster</div>
       <div class="tech-pill"><span>🎭</span> DiceBear API</div>
       <div class="tech-pill"><span>🚀</span> GitHub Pages</div>
+    </div>
+  </div>
+</section>
+
+ <!-- DEMO -->
+<section id="demo">
+  <div class="demo-inner">
+    <p class="section-eyebrow">Live Demo</p>
+    <h2 class="section-title">Try it <em>right here.</em></h2>
+    <p class="demo-sub">The full app runs below — no install needed. Select a donation category on the map, pick a shelter, commit to helping, and explore your profile and leaderboard.</p>
+ 
+    <div class="demo-layout">
+      <div class="demo-frame-wrap">
+        <div class="demo-frame-glow"></div>
+        <div class="demo-phone-outer">
+          <div class="demo-phone-notch"></div>
+          <div class="demo-iframe-shell">
+            <iframe
+              src="https://roopa-srinivas.github.io/BoostYourCommunity/app.html"
+              title="Boost Your Community live demo"
+              loading="lazy"
+              allow="geolocation"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+ 
+      <div class="demo-hints">
+        <div class="hint-card">
+          <div class="hint-step">Step 1</div>
+          <div class="hint-title">Open the map</div>
+          <div class="hint-desc">You'll land on the Give tab with a live map of San Francisco showing donation need clusters.</div>
+        </div>
+        <div class="hint-card">
+          <div class="hint-step">Step 2</div>
+          <div class="hint-title">Choose a category</div>
+          <div class="hint-desc">Select food, water, or clothing from the dropdown to see nearby shelters with specific needs.</div>
+        </div>
+        <div class="hint-card">
+          <div class="hint-step">Step 3</div>
+          <div class="hint-title">Pick a location & commit</div>
+          <div class="hint-desc">Tap a shelter, choose how many people you can help, and submit. You'll get a drop-off window.</div>
+        </div>
+        <div class="hint-card">
+          <div class="hint-step">Step 4</div>
+          <div class="hint-title">Explore your profile</div>
+          <div class="hint-desc">Switch to the Profile tab to see badges, the friends leaderboard, your in-progress donations, and the community heat map.</div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
