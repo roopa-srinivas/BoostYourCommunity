@@ -43,7 +43,70 @@ section { padding: 7rem 0; }
 
 #hero { min-height: 100vh; display: flex; align-items: center; padding-top: 5rem; background: var(--cream); position: relative; overflow: hidden; }
 #hero::before { content: ''; position: absolute; top: -120px; right: -120px; width: 520px; height: 520px; border-radius: 50%; background: var(--amber-pale); opacity: 0.8; pointer-events: none; }
-#hero::after { content: ''; position: absolute; bottom: -80px; left: -80px; width: 300px; height: 300px; border-radius: 50%; background: var(--amber-light); opacity: 0.1; pointer-events: none; }
+.hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; width: 100%; }
+.hero-text { position: relative; z-index: 1; }
+.map-wrap { position: relative; z-index: 1; }
+.map-frame {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: 0 24px 60px rgba(196,122,26,0.13);
+  background: #e8f0e0;
+  position: relative;
+}
+.map-topbar {
+  background: var(--amber);
+  padding: 0.65rem 1rem;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.map-topbar-title { color: #fff; font-weight: 500; font-size: 0.85rem; font-family: var(--sans); }
+.map-topbar-tabs { display: flex; gap: 0.2rem; }
+.map-tab { font-size: 0.7rem; font-weight: 500; padding: 0.2rem 0.6rem; border-radius: 100px; color: rgba(255,255,255,0.65); font-family: var(--sans); }
+.map-tab.active { background: rgba(255,255,255,0.2); color: #fff; }
+.map-svg-wrap { position: relative; }
+.map-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(to top, rgba(253,248,240,0.97) 0%, rgba(253,248,240,0) 100%);
+  padding: 1rem;
+  pointer-events: none;
+}
+.need-list { display: flex; flex-direction: column; gap: 0.4rem; }
+.need-row {
+  display: flex; align-items: center; gap: 0.6rem;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.45rem 0.7rem;
+  font-family: var(--sans);
+}
+.need-emoji { font-size: 1rem; }
+.need-info { flex: 1; }
+.need-name { font-size: 0.72rem; font-weight: 500; color: var(--text); line-height: 1.2; }
+.need-detail { font-size: 0.65rem; color: var(--text-muted); }
+.need-badge { font-size: 0.6rem; font-weight: 600; padding: 0.15rem 0.45rem; border-radius: 100px; }
+.badge-urgent { background: #fde8c8; color: #8a3a00; }
+.badge-open { background: #d1fae5; color: #065f46; }
+/* pin animations */
+@keyframes pin-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.35); opacity: 0.7; }
+}
+@keyframes pin-pop {
+  0% { transform: scale(0); opacity: 0; }
+  60% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.map-pin { animation: pin-pop 0.5s ease both, pin-pulse 2.5s ease-in-out infinite; }
+.map-pin:nth-child(1) { animation-delay: 0.1s, 0.6s; }
+.map-pin:nth-child(2) { animation-delay: 0.25s, 0.8s; }
+.map-pin:nth-child(3) { animation-delay: 0.4s, 1.1s; }
+.map-pin:nth-child(4) { animation-delay: 0.55s, 1.4s; }
+.map-pin:nth-child(5) { animation-delay: 0.7s, 1.0s; }
+.map-pin:nth-child(6) { animation-delay: 0.85s, 1.7s; }
+@media (max-width: 800px) {
+  .hero-inner { grid-template-columns: 1fr; gap: 3rem; }
+  .map-wrap { display: none; }
+}
 
 .hero-eyebrow { font-size: 0.8rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber-mid); margin-bottom: 1.25rem; }
 .hero-name { font-family: var(--serif); font-size: clamp(2.5rem, 7vw, 5rem); line-height: 1.05; color: var(--text); margin-bottom: 1.5rem; }
@@ -121,6 +184,7 @@ footer a:hover { color: var(--amber-light); }
 .hero-name { animation: fadeUp 0.6s 0.1s ease both; }
 .hero-desc { animation: fadeUp 0.6s 0.2s ease both; }
 .hero-links { animation: fadeUp 0.6s 0.3s ease both; }
+.map-wrap { animation: fadeUp 0.8s 0.2s ease both; }
 </style>
 </head>
 <body>
@@ -138,12 +202,171 @@ footer a:hover { color: var(--amber-light); }
 
 <section id="hero">
   <div class="container">
-    <p class="hero-eyebrow">Community · Donation · Web App</p>
-    <h1 class="hero-name">Give what your community<br><em>actually</em> needs, right now.</h1>
-    <p class="hero-desc">Boost Your Community connects local donors with homeless shelters and help centers in real time — matching specific needs like food, water, and clothing with people who can help today.</p>
-    <div class="hero-links">
-      <a class="btn btn-primary" href="#demo">Try Demo</a>
-      <a class="btn btn-outline" href="https://github.com/roopa-srinivas/BoostYourCommunity" target="_blank">View on GitHub →</a>
+    <div class="hero-inner">
+      <div class="hero-text">
+        <p class="hero-eyebrow">Community · Donation · Web App</p>
+        <h1 class="hero-name">Give what your community<br><em>actually</em> needs, right now.</h1>
+        <p class="hero-desc">Boost Your Community connects local donors with homeless shelters and help centers in real time — matching specific needs like food, water, and clothing with people who can help today.</p>
+        <div class="hero-links">
+          <a class="btn btn-primary" href="#demo">Try Demo</a>
+          <a class="btn btn-outline" href="https://github.com/roopa-srinivas/BoostYourCommunity" target="_blank">View on GitHub →</a>
+        </div>
+      </div>
+      <div class="map-wrap">
+        <div class="map-frame">
+          <div class="map-topbar">
+            <span class="map-topbar-title">Boost Your Community</span>
+            <div class="map-topbar-tabs">
+              <span class="map-tab active">📍 Give</span>
+              <span class="map-tab">👤 Profile</span>
+            </div>
+          </div>
+          <div class="map-svg-wrap">
+            <svg viewBox="0 0 360 280" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%;">
+              <!-- Sky/water background -->
+              <rect width="360" height="280" fill="#dce8d4"/>
+              <!-- Bay water (east) -->
+              <path d="M310 0 L360 0 L360 280 L310 280 Q290 240 295 180 Q300 120 310 0Z" fill="#b8d4e8"/>
+              <!-- Ocean/bay (west/south) -->
+              <path d="M0 240 Q40 230 80 250 Q120 265 160 260 Q200 255 240 265 L360 280 L0 280Z" fill="#b8d4e8"/>
+
+              <!-- Neighborhood fills -->
+              <!-- Mission -->
+              <rect x="140" y="140" width="80" height="70" rx="2" fill="#d4e8cc" opacity="0.7"/>
+              <!-- SoMa -->
+              <rect x="155" y="90" width="90" height="55" rx="2" fill="#cce4c0" opacity="0.6"/>
+              <!-- Tenderloin -->
+              <rect x="120" y="85" width="50" height="45" rx="2" fill="#d8ebd0" opacity="0.6"/>
+              <!-- Castro -->
+              <rect x="90" y="145" width="55" height="55" rx="2" fill="#cfe8c7" opacity="0.6"/>
+              <!-- Haight -->
+              <rect x="55" y="110" width="70" height="50" rx="2" fill="#d2e9c9" opacity="0.6"/>
+              <!-- Nob Hill -->
+              <rect x="115" y="45" width="55" height="45" rx="2" fill="#cae6be" opacity="0.6"/>
+              <!-- SOMA/Financial -->
+              <rect x="185" y="45" width="70" height="50" rx="2" fill="#d0e9c5" opacity="0.6"/>
+
+              <!-- Grid streets - horizontals -->
+              <line x1="0" y1="55" x2="310" y2="55" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+              <line x1="0" y1="75" x2="315" y2="75" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="0" y1="95" x2="320" y2="95" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+              <line x1="0" y1="115" x2="320" y2="115" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="0" y1="135" x2="315" y2="135" stroke="#fff" stroke-width="2" opacity="0.9"/>
+              <line x1="0" y1="155" x2="310" y2="155" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="0" y1="175" x2="305" y2="175" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+              <line x1="0" y1="195" x2="295" y2="195" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="0" y1="215" x2="285" y2="215" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="0" y1="235" x2="270" y2="235" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+              <!-- Grid streets - verticals -->
+              <line x1="50" y1="0" x2="30" y2="280" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="80" y1="0" x2="60" y2="280" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+              <line x1="110" y1="0" x2="90" y2="280" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="140" y1="0" x2="120" y2="280" stroke="#fff" stroke-width="2" opacity="0.9"/>
+              <line x1="170" y1="0" x2="152" y2="280" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="200" y1="0" x2="183" y2="280" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+              <line x1="230" y1="0" x2="215" y2="280" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="260" y1="0" x2="247" y2="280" stroke="#fff" stroke-width="1" opacity="0.7"/>
+              <line x1="290" y1="0" x2="280" y2="250" stroke="#fff" stroke-width="1.5" opacity="0.9"/>
+              <!-- Diagonal - Market St -->
+              <line x1="80" y1="135" x2="255" y2="85" stroke="#fff" stroke-width="3" opacity="0.95"/>
+              <!-- Diagonal - Van Ness -->
+              <line x1="130" y1="0" x2="115" y2="280" stroke="#fff" stroke-width="2.5" opacity="0.95"/>
+
+              <!-- Neighborhood labels -->
+              <text x="178" y="168" font-size="8" fill="#5a7a50" font-family="sans-serif" font-weight="600" text-anchor="middle" opacity="0.9">MISSION</text>
+              <text x="198" y="115" font-size="8" fill="#5a7a50" font-family="sans-serif" font-weight="600" text-anchor="middle" opacity="0.9">SoMa</text>
+              <text x="143" y="106" font-size="7" fill="#5a7a50" font-family="sans-serif" font-weight="600" text-anchor="middle" opacity="0.9">TENDERLOIN</text>
+              <text x="116" y="170" font-size="7.5" fill="#5a7a50" font-family="sans-serif" font-weight="600" text-anchor="middle" opacity="0.9">CASTRO</text>
+              <text x="86" y="133" font-size="7.5" fill="#5a7a50" font-family="sans-serif" font-weight="600" text-anchor="middle" opacity="0.9">HAIGHT</text>
+              <text x="140" y="65" font-size="7.5" fill="#5a7a50" font-family="sans-serif" font-weight="600" text-anchor="middle" opacity="0.9">NOB HILL</text>
+              <text x="220" y="62" font-size="7" fill="#5a7a50" font-family="sans-serif" font-weight="600" text-anchor="middle" opacity="0.9">FINANCIAL</text>
+              <text x="260" y="140" font-size="7" fill="#4a7a9a" font-family="sans-serif" font-weight="600" text-anchor="middle" opacity="0.8">MISSION BAY</text>
+              <!-- Market St label -->
+              <text x="170" y="106" font-size="7" fill="#7a6040" font-family="sans-serif" font-weight="700" text-anchor="middle" transform="rotate(-12 170 106)" opacity="0.85">Market St</text>
+
+              <!-- Donation pins -->
+              <!-- Pin shape: circle + drop shadow suggestion -->
+              <!-- Mission Food Bank -->
+              <g class="map-pin" style="transform-origin:175px 162px">
+                <circle cx="175" cy="162" r="9" fill="#c47a1a" opacity="0.18"/>
+                <circle cx="175" cy="158" r="6" fill="#c47a1a"/>
+                <circle cx="175" cy="158" r="2.5" fill="#fff"/>
+                <polygon points="175,164 171,156 179,156" fill="#c47a1a"/>
+              </g>
+              <!-- Tenderloin Center -->
+              <g class="map-pin" style="transform-origin:143px 103px">
+                <circle cx="143" cy="103" r="9" fill="#e09030" opacity="0.18"/>
+                <circle cx="143" cy="99" r="6" fill="#e09030"/>
+                <circle cx="143" cy="99" r="2.5" fill="#fff"/>
+                <polygon points="143,105 139,97 147,97" fill="#e09030"/>
+              </g>
+              <!-- SoMa Shelter -->
+              <g class="map-pin" style="transform-origin:212px 118px">
+                <circle cx="212" cy="118" r="9" fill="#c47a1a" opacity="0.18"/>
+                <circle cx="212" cy="114" r="6" fill="#c47a1a"/>
+                <circle cx="212" cy="114" r="2.5" fill="#fff"/>
+                <polygon points="212,120 208,112 216,112" fill="#c47a1a"/>
+              </g>
+              <!-- Castro Food Pantry -->
+              <g class="map-pin" style="transform-origin:108px 172px">
+                <circle cx="108" cy="172" r="9" fill="#f5b942" opacity="0.18"/>
+                <circle cx="108" cy="168" r="6" fill="#f5b942"/>
+                <circle cx="108" cy="168" r="2.5" fill="#fff"/>
+                <polygon points="108,174 104,166 112,166" fill="#f5b942"/>
+              </g>
+              <!-- Haight Shelter -->
+              <g class="map-pin" style="transform-origin:82px 128px">
+                <circle cx="82" cy="128" r="9" fill="#e09030" opacity="0.18"/>
+                <circle cx="82" cy="124" r="6" fill="#e09030"/>
+                <circle cx="82" cy="124" r="2.5" fill="#fff"/>
+                <polygon points="82,130 78,122 86,122" fill="#e09030"/>
+              </g>
+              <!-- Nob Hill Resource -->
+              <g class="map-pin" style="transform-origin:148px 68px">
+                <circle cx="148" cy="68" r="9" fill="#c47a1a" opacity="0.18"/>
+                <circle cx="148" cy="64" r="6" fill="#c47a1a"/>
+                <circle cx="148" cy="64" r="2.5" fill="#fff"/>
+                <polygon points="148,70 144,62 152,62" fill="#c47a1a"/>
+              </g>
+
+              <!-- User location dot -->
+              <circle cx="183" cy="138" r="7" fill="#3B82F6" opacity="0.2"/>
+              <circle cx="183" cy="138" r="4" fill="#3B82F6"/>
+              <circle cx="183" cy="138" r="2" fill="#fff"/>
+            </svg>
+
+            <!-- Floating need list overlay -->
+            <div class="map-overlay">
+              <div class="need-list">
+                <div class="need-row">
+                  <span class="need-emoji">🍞</span>
+                  <div class="need-info">
+                    <div class="need-name">Mission Food Bank</div>
+                    <div class="need-detail">12 meals needed · 0.3 mi</div>
+                  </div>
+                  <span class="need-badge badge-urgent">Urgent</span>
+                </div>
+                <div class="need-row">
+                  <span class="need-emoji">🧥</span>
+                  <div class="need-info">
+                    <div class="need-name">Tenderloin Center</div>
+                    <div class="need-detail">5 coats needed · 0.8 mi</div>
+                  </div>
+                  <span class="need-badge badge-open">Open</span>
+                </div>
+                <div class="need-row">
+                  <span class="need-emoji">💧</span>
+                  <div class="need-info">
+                    <div class="need-name">SoMa Shelter</div>
+                    <div class="need-detail">Water bottles · 1.1 mi</div>
+                  </div>
+                  <span class="need-badge badge-open">Open</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
