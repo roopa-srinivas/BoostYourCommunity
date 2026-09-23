@@ -77,9 +77,9 @@ export default function ProfileScreen() {
       )}
 
       <View style={styles.row}>
-        <Stat value={receivedPledges.length} label="drop-offs confirmed" />
-        <Stat value={itemsDonated} label="items donated" />
-        <Stat value={upcoming} label="upcoming" />
+        <Stat value={receivedPledges.length} label={'drop-offs\nconfirmed'} />
+        <Stat value={itemsDonated} label={'items\ndonated'} />
+        <Stat value={upcoming} label={'upcoming\ndrop-offs'} />
       </View>
 
       <Button variant="secondary" label="sign out" onPress={() => supabase.auth.signOut()} />
@@ -90,8 +90,9 @@ export default function ProfileScreen() {
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <Card style={styles.stat}>
-      <ThemedText type="subtitle">{value}</ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
+      <ThemedText type="title">{value}</ThemedText>
+      {/* Every label is two lines, centred, so the three boxes line up. */}
+      <ThemedText type="small" themeColor="textSecondary" style={styles.statLabel} numberOfLines={2}>
         {label}
       </ThemedText>
     </Card>
@@ -103,5 +104,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: Spacing.two },
   flex: { flex: 1 },
   start: { alignSelf: 'flex-start', marginTop: Spacing.one },
-  stat: { flex: 1, alignItems: 'center' },
+  stat: { flex: 1, alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: Spacing.three },
+  statLabel: { textAlign: 'center', fontSize: 13, lineHeight: 17 },
 });
