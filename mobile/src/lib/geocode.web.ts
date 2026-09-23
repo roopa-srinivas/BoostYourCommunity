@@ -17,3 +17,21 @@ export async function geocode(address: string): Promise<Coordinates | null> {
     return null;
   }
 }
+
+/** A readable street address for coordinates, via Nominatim, or null. */
+export async function reverseGeocode({ latitude, longitude }: Coordinates): Promise<string | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`;
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!response.ok) return null;
+    const result = (await response.json()) as {
+      address?: { house_number?: string; road?: string; city?: string; town?: string; state?: string };
+    };
+    const a = result.address;
+    if (!a) return null;
+    const street = [a.house_number, a.road].filter(Boolean).join(' ');
+    return [street, a.city ?? a.town, a.state].filter(Boolean).join(', ') || null;
+  } catch {
+    return null;
+  }
+}

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { LegalLinks } from '@/components/legal-links';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { ChipGroup } from '@/components/ui/chip';
@@ -134,6 +135,7 @@ export default function SignInScreen() {
             onPress={submit}
             loading={submitting}
           />
+          <LegalLinks />
         </Screen>
       </KeyboardAvoidingView>
     </SafeAreaView>

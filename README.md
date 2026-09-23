@@ -20,6 +20,7 @@ A community-driven donation platform connecting local donors with homeless shelt
 | `supabase/migrations/` | The database schema: organizations, staff, needs, pledges and follows, with access rules. |
 | `supabase/seed.sql` | Fictional sample organizations and needs for development and demos. |
 | `supabase/checks/` | Behavior checks for the schema's rules (`./supabase/checks/run.sh`). |
+| `privacy.html`, `terms.html` | Privacy policy and terms of use, served by GitHub Pages and linked from the app. |
 
 ## How the app works
 1. An approved organization posts a specific need, like "40 pairs of new socks, drop off Tue 4-7pm".
@@ -27,7 +28,7 @@ A community-driven donation platform connecting local donors with homeless shelt
 3. The donor drops the items off during the window.
 4. Staff mark the pledge received (or a no-show). Only received donations count toward badges, leaderboards and stats.
 
-New organizations start as pending and are approved by an admin before they appear to donors or can post needs.
+New organizations start as pending and are approved by an admin (in the app under profile → review organizations) before they appear to donors or can post needs. Admins are listed in the `admins` table. Pledges still unconfirmed a day after their drop-off window closes are marked as not dropped off by an hourly job.
 
 ## Development
 **App:**

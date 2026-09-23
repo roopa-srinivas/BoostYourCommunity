@@ -1,10 +1,11 @@
 import * as Location from 'expo-location';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
 import type { Coordinates } from '@/api/needs';
 import { useRegisterOrganization } from '@/api/organizations';
 import { ThemedText } from '@/components/themed-text';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChipGroup } from '@/components/ui/chip';
 import { ErrorText } from '@/components/ui/message';
@@ -12,11 +13,13 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { errorMessage } from '@/lib/format';
-import { geocode } from '@/lib/geocode';
+import { geocode, reverseGeocode } from '@/lib/geocode';
 import { goBackOr } from '@/lib/navigation';
 import { ORGANIZATION_KINDS, type OrganizationKind } from '@/lib/labels';
 
-const LOCATION_TIMEOUT_MS = 10_000;
+const LOCATION_TIMEOUT_MS = 15_000;
+// A fix from the last few minutes is good enough to place a pin, and instant.
+const RECENT_FIX_MS = 5 * 60 * 1000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
   return Promise.race([
@@ -36,23 +39,47 @@ export default function RegisterOrganizationScreen() {
   const [here, setHere] = useState<Coordinates | null>(null);
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  /** Shown right under the location button, where the person is looking. */
+  const [locationError, setLocationError] = useState<string | null>(null);
+  /** Location is blocked and the phone won't ask again: offer the settings app. */
+  const [needsSettings, setNeedsSettings] = useState(false);
 
   async function useCurrentLocation() {
-    setError(null);
+    setLocationError(null);
+    setNeedsSettings(false);
     setLocating(true);
     try {
-      const position = await withTimeout(
-        (async () => {
-          const { status } = await Location.requestForegroundPermissionsAsync();
-          if (status !== 'granted') throw new Error('allow location access to use your current location.');
-          return Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
-        })(),
-        LOCATION_TIMEOUT_MS,
-        'we couldn’t get your location. check that location access is allowed, or enter the address instead.',
-      );
-      setHere({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+      let permission = await Location.getForegroundPermissionsAsync();
+      if (permission.status !== 'granted' && permission.canAskAgain) {
+        permission = await Location.requestForegroundPermissionsAsync();
+      }
+      if (permission.status !== 'granted') {
+        setNeedsSettings(!permission.canAskAgain);
+        throw new Error(
+          permission.canAskAgain
+            ? 'allow location access to use your current location.'
+            : 'location is turned off for this app. turn it on in settings, or type the address instead.',
+        );
+      }
+
+      const recent = await Location.getLastKnownPositionAsync({ maxAge: RECENT_FIX_MS });
+      const position =
+        recent ??
+        (await withTimeout(
+          Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced }),
+          LOCATION_TIMEOUT_MS,
+          'we couldn’t get your location in time. try again near a window, or type the address instead.',
+        ));
+      const coordinates = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+      setHere(coordinates);
+
+      // Fill in the address too, so there's nothing left to type.
+      if (!address.trim()) {
+        const found = await reverseGeocode(coordinates);
+        if (found) setAddress(found);
+      }
     } catch (e) {
-      setError(errorMessage(e));
+      setLocationError(errorMessage(e));
     } finally {
       setLocating(false);
     }
@@ -102,20 +129,33 @@ export default function RegisterOrganizationScreen() {
       <TextField
         label="drop-off address"
         value={address}
-        onChangeText={(text) => {
-          setAddress(text);
-          setHere(null);
-        }}
+        onChangeText={setAddress}
         placeholder="street, city, state"
         autoComplete="street-address"
-        hint={here ? 'using your current location for the map pin.' : 'where donors should bring items.'}
+        hint="where donors should bring items."
       />
-      <Button
-        variant="secondary"
-        label="use my current location"
-        onPress={useCurrentLocation}
-        loading={locating}
-      />
+      {here ? (
+        <Card style={styles.pinCard}>
+          <ThemedText type="smallBold">map pin set to where you are now</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            donors will see the pin here and the address above.{' '}
+            <ThemedText type="link" accessibilityRole="button" onPress={() => setHere(null)}>
+              use the typed address instead
+            </ThemedText>
+          </ThemedText>
+        </Card>
+      ) : (
+        <Button
+          variant="secondary"
+          label="use my current location"
+          onPress={useCurrentLocation}
+          loading={locating}
+        />
+      )}
+      {locationError ? <ErrorText>{locationError}</ErrorText> : null}
+      {needsSettings ? (
+        <Button variant="secondary" label="open settings" onPress={() => Linking.openSettings()} />
+      ) : null}
       <TextField
         label="about (optional)"
         value={description}
@@ -140,4 +180,5 @@ export default function RegisterOrganizationScreen() {
 
 const styles = StyleSheet.create({
   field: { gap: Spacing.one },
+  pinCard: { gap: Spacing.half },
 });
