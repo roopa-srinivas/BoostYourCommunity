@@ -39,7 +39,9 @@ npm install
 npx expo start               # scan the QR code with Expo Go, or press i / a / w
 ```
 
-**Database checks** (needs `brew install postgresql@17 postgis`):
+**Checks on GitHub:** every pull request (and push to `main`) runs type checking, lint and the database checks automatically (`.github/workflows/checks.yml`).
+
+**Database checks locally** (needs `brew install postgresql@17 postgis`):
 ```sh
 ./supabase/checks/run.sh
 ```

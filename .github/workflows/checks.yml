@@ -1,0 +1,58 @@
+# Runs on every pull request and on pushes to main.
+name: checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same branch cancels the older run.
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  app:
+    name: app (types and lint)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - run: npm ci --no-audit --no-fund
+      # Expo generates this (git-ignored) file when the dev server starts;
+      # type checking needs its declarations (e.g. for CSS imports).
+      - name: Create Expo type declarations
+        run: printf '/// <reference types="expo/types" />\n' > expo-env.d.ts
+      - name: Type check
+        run: npx tsc --noEmit
+      - name: Lint
+        run: npx expo lint
+
+  database:
+    name: database (schema checks)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:17-3.5
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply migrations and seed, run behavior checks
+        run: ./supabase/checks/run.sh
+        env:
+          CHECKS_DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
