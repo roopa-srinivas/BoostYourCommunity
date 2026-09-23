@@ -1,0 +1,153 @@
+import { router } from 'expo-router';
+import { useState } from 'react';
+import { StyleSheet } from 'react-native';
+
+import { useOrganizationNeeds } from '@/api/needs';
+import { useMyOrganizations } from '@/api/organizations';
+import { ThemedText } from '@/components/themed-text';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { ChipGroup } from '@/components/ui/chip';
+import { EmptyState, ErrorText, Loading } from '@/components/ui/message';
+import { Screen } from '@/components/ui/screen';
+import { Spacing } from '@/constants/theme';
+import type { Tables } from '@/lib/database.types';
+import { errorMessage, formatWindow } from '@/lib/format';
+import { NEED_STATUS, ORGANIZATION_STATUS } from '@/lib/labels';
+
+export default function OrganizationScreen() {
+  const memberships = useMyOrganizations();
+  const [chosenId, setChosenId] = useState<string | null>(null);
+
+  if (memberships.isPending) return <Loading />;
+
+  const organizations = (memberships.data ?? []).flatMap((m) => (m.organization ? [m.organization] : []));
+  const organization = organizations.find((o) => o.id === chosenId) ?? organizations[0];
+
+  if (!organization) {
+    return (
+      <Screen refreshing={memberships.isRefetching} onRefresh={memberships.refetch}>
+        {memberships.error ? <ErrorText>{errorMessage(memberships.error)}</ErrorText> : null}
+        <ThemedText type="smallBold">Do you work or volunteer at a shelter, pantry or community fridge?</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Register your organization to post what you need and confirm drop-offs. We review every organization
+          before it appears to donors.
+        </ThemedText>
+        <Button label="Register an organization" onPress={() => router.push('/organization/register')} />
+      </Screen>
+    );
+  }
+
+  const status = ORGANIZATION_STATUS[organization.status];
+
+  return (
+    <OrganizationNeeds
+      organizationId={organization.id}
+      header={
+        <>
+          {organizations.length > 1 ? (
+            <ChipGroup
+              scroll
+              options={organizations.map((o) => ({ value: o.id, label: o.name }))}
+              value={organization.id}
+              onChange={setChosenId}
+            />
+          ) : null}
+          <Card>
+            <Badge label={status.label} tone={status.tone} />
+            <ThemedText type="smallBold" style={styles.orgName}>
+              {organization.name}
+            </ThemedText>
+            <ThemedText type="small" themeColor="textSecondary">
+              {organization.address}
+            </ThemedText>
+            {organization.status === 'pending' ? (
+              <ThemedText type="small" style={styles.note}>
+                We’re reviewing your organization. Once it’s approved you can post needs and donors nearby will see
+                them.
+              </ThemedText>
+            ) : null}
+            {organization.status === 'suspended' ? (
+              <ThemedText type="small" style={styles.note}>
+                This organization is suspended, so its needs are hidden from donors.
+              </ThemedText>
+            ) : null}
+          </Card>
+          {organization.status === 'approved' ? (
+            <Button
+              label="Post a need"
+              onPress={() =>
+                router.push({ pathname: '/organization/need-form', params: { organizationId: organization.id } })
+              }
+            />
+          ) : null}
+        </>
+      }
+    />
+  );
+}
+
+function OrganizationNeeds({ organizationId, header }: { organizationId: string; header: React.ReactNode }) {
+  const needs = useOrganizationNeeds(organizationId);
+  const now = new Date();
+  const isActive = (need: Tables<'needs'>) => need.status === 'open' && new Date(need.dropoff_ends_at) > now;
+  const active = (needs.data ?? []).filter(isActive);
+  const past = (needs.data ?? []).filter((need) => !isActive(need)).reverse();
+
+  return (
+    <Screen refreshing={needs.isRefetching} onRefresh={needs.refetch}>
+      {header}
+      {needs.error ? <ErrorText>{errorMessage(needs.error)}</ErrorText> : null}
+      {needs.isPending ? (
+        <Loading />
+      ) : (
+        <>
+          <ThemedText type="smallBold" style={styles.sectionTitle}>
+            Open needs
+          </ThemedText>
+          {active.length === 0 ? (
+            <EmptyState title="No open needs" body="Post a need so donors nearby know what to bring." />
+          ) : (
+            active.map((need) => <StaffNeedCard key={need.id} need={need} />)
+          )}
+          {past.length > 0 ? (
+            <>
+              <ThemedText type="smallBold" style={styles.sectionTitle}>
+                Past needs
+              </ThemedText>
+              {past.map((need) => (
+                <StaffNeedCard key={need.id} need={need} />
+              ))}
+            </>
+          ) : null}
+        </>
+      )}
+    </Screen>
+  );
+}
+
+function StaffNeedCard({ need }: { need: Tables<'needs'> }) {
+  const ended = need.status === 'open' && new Date(need.dropoff_ends_at) <= new Date();
+  const status = ended ? { label: 'Ended', tone: 'neutral' as const } : NEED_STATUS[need.status];
+  return (
+    <Card onPress={() => router.push({ pathname: '/organization/need/[id]', params: { id: need.id } })}>
+      <Badge label={status.label} tone={status.tone} />
+      <ThemedText type="smallBold" style={styles.orgName}>
+        {need.title}
+      </ThemedText>
+      <ThemedText type="small">
+        {need.quantity_committed} of {need.quantity_needed} {need.unit} pledged
+      </ThemedText>
+      <ThemedText type="small" themeColor="textSecondary">
+        Drop off {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
+      </ThemedText>
+    </Card>
+  );
+}
+
+const styles = StyleSheet.create({
+  orgName: { marginTop: Spacing.one, fontSize: 17 },
+  note: { marginTop: Spacing.two },
+  sectionTitle: { marginTop: Spacing.two },
+});

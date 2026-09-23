@@ -164,14 +164,14 @@
                 <div class="w-full max-w-sm text-center flex-shrink-0">
                     <div class="relative inline-block">
                         <label for="profile-pic-upload" class="cursor-pointer group">
-                            <img id="profile-pic" src="https://api.dicebear.com/8.x/adventurer/svg?seed=Maddie" alt="User Avatar" class="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg group-hover:opacity-75 transition-opacity">
+                            <img id="profile-pic" src="https://api.dicebear.com/8.x/adventurer/svg?seed=Roopa" alt="User Avatar" class="w-32 h-32 rounded-full mx-auto border-4 border-white shadow-lg group-hover:opacity-75 transition-opacity">
                              <div class="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                             </div>
                         </label>
                         <input type="file" id="profile-pic-upload" class="hidden" accept="image/*">
                     </div>
-                    <h2 class="text-3xl font-bold text-gray-800 mt-4">maddie bhuvan</h2>
+                    <h2 class="text-3xl font-bold text-gray-800 mt-4">roopa srinivas</h2>
                     <p class="text-md text-gray-500">san francisco</p>
                     <!-- Stats Section -->
                     <div class="mt-6 flex justify-around w-full border-t border-b border-gray-200 py-3">
@@ -267,8 +267,8 @@
             clothing: [ { id: 9, name: "haight-ashbury donation center", distance: 2.2 }, { id: 4, name: "tenderloin homeless shelter", distance: 1.9 }, { id: 10, name: "goodwill mission creek", distance: 0.9 }, { id: 11, name: "richmond district family closet", distance: 4.8 }, { id: 12, name: "bayview salvation army", distance: 2.6 }, ],
         };
         const friendsData = [
-            { id: 1, name: 'maddie bhuvan', donations: 22, avatar: 'https://api.dicebear.com/8.x/adventurer/svg?seed=Maddie' },
-            { id: 2, name: 'roopa srinivas', donations: 20, avatar: 'https://api.dicebear.com/8.x/adventurer/svg?seed=Beatrice' },
+            { id: 1, name: 'roopa srinivas', donations: 22, avatar: 'https://api.dicebear.com/8.x/adventurer/svg?seed=Roopa' },
+            { id: 2, name: 'beatrice adams', donations: 20, avatar: 'https://api.dicebear.com/8.x/adventurer/svg?seed=Beatrice' },
             { id: 3, name: 'charles brown', donations: 18, avatar: 'https://api.dicebear.com/8.x/adventurer/svg?seed=Charles' },
             { id: 4, name: 'diana marie', donations: 15, avatar: 'https://api.dicebear.com/8.x/adventurer/svg?seed=Diana' },
             { id: 5, name: 'edward ray', donations: 11, avatar: 'https://api.dicebear.com/8.x/adventurer/svg?seed=Edward' },
@@ -573,7 +573,7 @@
 
         function showConfirmationPage() {
             const committed = parseInt(appState.committedQuantity, 10);
-            const user = friendsData.find(f => f.name === 'maddie bhuvan');
+            const user = friendsData.find(f => f.name === 'roopa srinivas');
             const oldDonations = user ? user.donations : 0;
             
             // Update donation totals
@@ -624,7 +624,7 @@
             sortedFriends.forEach((friend, index) => {
                 const rank = index + 1;
                 const item = document.createElement('div');
-                item.className = `flex items-center p-3 rounded-lg ${friend.name === 'maddie bhuvan' ? 'bg-blue-100 border-2 border-blue-500' : 'bg-white shadow-sm'}`;
+                item.className = `flex items-center p-3 rounded-lg ${friend.name === 'roopa srinivas' ? 'bg-blue-100 border-2 border-blue-500' : 'bg-white shadow-sm'}`;
                 item.innerHTML = `
                     <div class="font-bold text-lg text-gray-500 w-8 text-center">${rank}</div>
                     <label for="friend-pic-upload-${friend.id}" class="cursor-pointer mx-4 group relative">
@@ -647,7 +647,7 @@
         }
 
         function updateProfileStats() {
-            const user = friendsData.find(f => f.name === 'maddie bhuvan');
+            const user = friendsData.find(f => f.name === 'roopa srinivas');
             if (user) {
                 profileDonationsCountEl.textContent = user.donations;
             }
@@ -658,7 +658,7 @@
         function showAchievementsPage() {
             const listEl = document.getElementById('achievements-list');
             listEl.innerHTML = '';
-            const userDonations = friendsData.find(f => f.name === 'maddie bhuvan').donations;
+            const userDonations = friendsData.find(f => f.name === 'roopa srinivas').donations;
             
             // Find next badge
             let nextBadge = null;
@@ -785,7 +785,7 @@
             reader.onload = (e) => {
                 const newImageUrl = e.target.result;
                 document.getElementById('profile-pic').src = newImageUrl;
-                const userInFriends = friendsData.find(f => f.name === 'maddie bhuvan');
+                const userInFriends = friendsData.find(f => f.name === 'roopa srinivas');
                 if (userInFriends) {
                     userInFriends.avatar = newImageUrl;
                 }
@@ -807,7 +807,7 @@
                     const friend = friendsData.find(f => f.id == friendId);
                     if (friend) {
                         friend.avatar = newImageUrl;
-                        if (friend.name === 'maddie bhuvan') {
+                        if (friend.name === 'roopa srinivas') {
                             document.getElementById('profile-pic').src = newImageUrl;
                         }
                     }
@@ -835,7 +835,7 @@
             appState.followersCount = friendsData.length + Math.floor(Math.random() * 5) + 2; // Has all friends as followers, plus a few more
             
             // Pre-populate achieved badges based on starting donations
-            const startingDonations = friendsData.find(f => f.name === 'maddie bhuvan').donations;
+            const startingDonations = friendsData.find(f => f.name === 'roopa srinivas').donations;
             checkAndAwardBadges(0, startingDonations);
             // Manually set some past dates for realism
             const firstBadge = appState.achievedBadges.find(b => b.milestone === 1);
