@@ -193,3 +193,74 @@ select pg_temp.ok('heat map ignores confirmations older than the window',
 select pg_temp.ok('leaderboard ignores confirmations from earlier months',
   (select items_given from public.leaderboard_this_month() where display_name = 'Eve') = 0);
 reset role;
+
+-- Admins -------------------------------------------------------------------------
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('11111111-0000-4000-8000-000000000007', 'ada@example.com', '{"display_name":"Ada Admin"}');
+insert into public.admins (user_id) values ('11111111-0000-4000-8000-000000000007');
+select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
+select pg_temp.rejects('non-admins cannot approve organizations',
+  $$select public.set_organization_status('00000000-0000-4000-8000-000000000006', 'approved')$$);
+select pg_temp.ok('non-admins cannot see who is an admin', (select count(*) from public.admins) = 0);
+reset role;
+select pg_temp.act_as('11111111-0000-4000-8000-000000000007');
+select pg_temp.ok('admins see pending organizations',
+  exists (select 1 from public.organizations where status = 'pending'));
+select pg_temp.ok('admins can see that they are admins', (select count(*) from public.admins) = 1);
+select public.set_organization_status('00000000-0000-4000-8000-000000000006', 'approved');
+select pg_temp.ok('admins can approve an organization',
+  (select status from public.organizations where id = '00000000-0000-4000-8000-000000000006') = 'approved');
+select public.set_organization_status('00000000-0000-4000-8000-000000000006', 'pending');
+reset role;
+select pg_temp.act_as(null);
+select pg_temp.rejects('signed-out visitors cannot change statuses',
+  $$select public.set_organization_status('00000000-0000-4000-8000-000000000006', 'approved')$$);
+reset role;
+
+-- Account deletion ----------------------------------------------------------------
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('22222222-0000-4000-8000-000000000008', 'gus@example.com', '{"display_name":"Gus"}');
+select pg_temp.act_as('22222222-0000-4000-8000-000000000008');
+insert into public.organizations (name, address, location) values ('Gus Pantry', '9 Main St', 'POINT(-122.42 37.77)');
+insert into public.pledges (need_id, quantity) select id, 6 from public.needs where title = 'Travel-size toiletries';
+reset role;
+update public.organizations set status = 'approved' where name = 'Gus Pantry';
+select pg_temp.ok('pledge counts before deletion',
+  (select quantity_committed from public.needs where title = 'Travel-size toiletries') = 6);
+select pg_temp.act_as('22222222-0000-4000-8000-000000000008');
+select public.delete_my_account();
+reset role;
+select pg_temp.ok('the account and profile are gone',
+  not exists (select 1 from auth.users where email = 'gus@example.com')
+  and not exists (select 1 from public.profiles where display_name = 'Gus'));
+select pg_temp.ok('their pledge is released back to the need',
+  (select quantity_committed from public.needs where title = 'Travel-size toiletries') = 0);
+select pg_temp.ok('an organization left with no members is suspended, not deleted',
+  (select status from public.organizations where name = 'Gus Pantry') = 'suspended');
+select pg_temp.ok('organizations with other members are untouched',
+  (select status from public.organizations where id = '00000000-0000-4000-8000-000000000002') = 'approved');
+select pg_temp.act_as(null);
+select pg_temp.rejects('signed-out visitors cannot delete accounts', 'select public.delete_my_account()');
+reset role;
+
+-- Expiring stale pledges -------------------------------------------------------------
+select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
+insert into public.pledges (need_id, quantity) select id, 3 from public.needs where title = 'Kids'' winter coats';
+insert into public.pledges (need_id, quantity) select id, 2 from public.needs where title = 'Warm jackets';
+reset role;
+-- Coats' window closed two days ago (past the grace period); jackets' closed an hour ago (within it).
+update public.needs set dropoff_starts_at = now() - interval '3 days', dropoff_ends_at = now() - interval '2 days'
+  where title = 'Kids'' winter coats';
+update public.needs set dropoff_starts_at = now() - interval '5 hours', dropoff_ends_at = now() - interval '1 hour'
+  where title = 'Warm jackets';
+select pg_temp.ok('expiry marks exactly the pledge past the grace period', public.expire_stale_pledges() = 1);
+select pg_temp.ok('the expired pledge is not dropped off, with no one recorded as deciding',
+  (select p.status = 'no_show' and p.resolved_by is null from public.pledges p join public.needs n on n.id = p.need_id
+   where n.title = 'Kids'' winter coats'));
+select pg_temp.ok('expiring releases the quantity',
+  (select quantity_committed from public.needs where title = 'Kids'' winter coats') = 0);
+select pg_temp.ok('a pledge within the grace period stays pledged',
+  (select p.status from public.pledges p join public.needs n on n.id = p.need_id where n.title = 'Warm jackets') = 'pledged');
+select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
+select pg_temp.rejects('users cannot run expiry themselves', 'select public.expire_stale_pledges()');
+reset role;

@@ -7,9 +7,11 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 
+import { useProfile } from '@/api/profile';
 import { navigationTheme } from '@/constants/navigation-theme';
 import { useStackScreenOptions } from '@/hooks/use-stack-screen-options';
 import { queryClient } from '@/lib/query-client';
+import { supabase } from '@/lib/supabase';
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
 
 SplashScreen.preventAutoHideAsync();
@@ -49,18 +51,38 @@ function RootStack() {
   if (loading) return null;
 
   return (
-    <Stack screenOptions={screenOptions}>
-      <Stack.Protected guard={!!session}>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="need/[id]" options={{ title: 'need' }} />
-        <Stack.Screen name="organization/register" options={{ title: 'register your organization' }} />
-        <Stack.Screen name="organization/need-form" options={{ title: 'need' }} />
-        <Stack.Screen name="organization/need/[id]" options={{ title: 'need' }} />
-        <Stack.Screen name="people" options={{ title: 'find people' }} />
-      </Stack.Protected>
-      <Stack.Protected guard={!session}>
-        <Stack.Screen name="sign-in" options={{ headerShown: false }} />
-      </Stack.Protected>
-    </Stack>
+    <>
+      {session ? <DeletedAccountGuard /> : null}
+      <Stack screenOptions={screenOptions}>
+        <Stack.Protected guard={!!session}>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="need/[id]" options={{ title: 'need' }} />
+          <Stack.Screen name="organization/register" options={{ title: 'register your organization' }} />
+          <Stack.Screen name="organization/need-form" options={{ title: 'need' }} />
+          <Stack.Screen name="organization/need/[id]" options={{ title: 'need' }} />
+          <Stack.Screen name="people" options={{ title: 'find people' }} />
+          <Stack.Screen name="admin" options={{ title: 'review organizations' }} />
+        </Stack.Protected>
+        <Stack.Protected guard={!session}>
+          <Stack.Screen name="sign-in" options={{ headerShown: false }} />
+        </Stack.Protected>
+      </Stack>
+    </>
   );
+}
+
+/**
+ * A session can outlive its account (deleted on another device, or by an
+ * admin). The profile lookup then finds no row: sign this device out rather
+ * than leave screens waiting on data that will never come.
+ */
+function DeletedAccountGuard() {
+  const profile = useProfile();
+  const missing = profile.error && 'code' in profile.error && profile.error.code === 'PGRST116';
+
+  useEffect(() => {
+    if (missing) supabase.auth.signOut({ scope: 'local' });
+  }, [missing]);
+
+  return null;
 }

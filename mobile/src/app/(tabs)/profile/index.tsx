@@ -2,10 +2,12 @@ import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useIsAdmin, useOrganizationsToReview } from '@/api/admin';
 import { useFollowCounts } from '@/api/community';
 import { useMyPledges } from '@/api/pledges';
-import { useProfile, useUpdateDisplayName } from '@/api/profile';
+import { useDeleteAccount, useProfile, useUpdateDisplayName } from '@/api/profile';
 import { BadgeTile } from '@/components/badge-tile';
+import { LegalLinks } from '@/components/legal-links';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -15,6 +17,7 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { computeBadges } from '@/lib/badges';
+import { confirm } from '@/lib/confirm';
 import { errorMessage, formatQuantity } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
@@ -24,6 +27,9 @@ export default function ProfileScreen() {
   const profile = useProfile();
   const pledges = useMyPledges();
   const followCounts = useFollowCounts();
+  const isAdmin = useIsAdmin();
+  const toReview = useOrganizationsToReview(isAdmin.data === true);
+  const deleteAccount = useDeleteAccount();
   const updateName = useUpdateDisplayName();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
@@ -45,6 +51,17 @@ export default function ProfileScreen() {
   const receivedPledges = all.filter((p) => p.status === 'received');
   const itemsDonated = receivedPledges.reduce((sum, p) => sum + p.quantity, 0);
   const upcoming = all.filter((p) => p.status === 'pledged').length;
+
+  const pendingCount = (toReview.data ?? []).filter((o) => o.status === 'pending').length;
+
+  async function confirmDeleteAccount() {
+    const ok = await confirm(
+      'delete your account?',
+      'this permanently deletes your account, your pledges and who you follow. it can’t be undone.',
+      'delete account',
+    );
+    if (ok) deleteAccount.mutate();
+  }
 
   async function saveName() {
     try {
@@ -139,7 +156,29 @@ export default function ProfileScreen() {
         )}
       </View>
 
+      {isAdmin.data ? (
+        <Card onPress={() => router.push('/admin')} style={styles.adminCard}>
+          <ThemedText type="bold">review organizations</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {pendingCount === 0
+              ? 'nothing waiting for approval'
+              : `${pendingCount} waiting for approval`}
+          </ThemedText>
+        </Card>
+      ) : null}
+
       <Button variant="secondary" label="sign out" onPress={() => supabase.auth.signOut()} />
+
+      <View style={styles.footer}>
+        <LegalLinks />
+        {deleteAccount.error ? <ErrorText>{errorMessage(deleteAccount.error)}</ErrorText> : null}
+        <Button
+          variant="danger"
+          label="delete account"
+          loading={deleteAccount.isPending}
+          onPress={confirmDeleteAccount}
+        />
+      </View>
     </Screen>
   );
 }
@@ -162,6 +201,8 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   start: { alignSelf: 'flex-start', marginTop: Spacing.one },
   next: { gap: Spacing.two },
+  adminCard: { gap: Spacing.half },
+  footer: { gap: Spacing.three, marginTop: Spacing.four },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   gridItem: { width: '31%' },
   stat: { flex: 1, alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: Spacing.three },

@@ -25,7 +25,9 @@ for migration in "$ROOT"/supabase/migrations/*.sql; do
 done
 psql -v ON_ERROR_STOP=1 -f "$ROOT/supabase/seed.sql" >/dev/null
 
-results="$(psql -f "$ROOT/supabase/checks/schema_checks.sql" 2>&1 | sed -n 's/.*NOTICE:  //p; s/.*ERROR:  /ERROR /p')"
+# `|| true`: a SQL error in a check stops psql, but we still want every
+# result printed; the ERROR line makes the run fail below.
+results="$( (psql -f "$ROOT/supabase/checks/schema_checks.sql" 2>&1 || true) | sed -n 's/.*NOTICE:  //p; s/.*ERROR:  /ERROR /p')"
 echo "$results"
 
 if grep -qE '^(FAIL|ERROR)' <<<"$results"; then

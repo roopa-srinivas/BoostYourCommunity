@@ -27,3 +27,15 @@ export function useUpdateDisplayName() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile'] }),
   });
 }
+
+/** Permanently deletes the signed-in user's account, then signs out on this device. */
+export function useDeleteAccount() {
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('delete_my_account');
+      if (error) throw error;
+      // The session belongs to an account that no longer exists: clear it locally.
+      await supabase.auth.signOut({ scope: 'local' });
+    },
+  });
+}

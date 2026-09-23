@@ -39,6 +39,29 @@ export type Database = {
   }
   public: {
     Tables: {
+      admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admins_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       follows: {
         Row: {
           created_at: string
@@ -320,6 +343,8 @@ export type Database = {
           organization_name: string
         }[]
       }
+      delete_my_account: { Args: never; Returns: undefined }
+      expire_stale_pledges: { Args: never; Returns: number }
       leaderboard_this_month: {
         Args: never
         Returns: {
@@ -359,6 +384,13 @@ export type Database = {
         Args: {
           outcome: Database["public"]["Enums"]["pledge_status"]
           pledge_id: string
+        }
+        Returns: undefined
+      }
+      set_organization_status: {
+        Args: {
+          new_status: Database["public"]["Enums"]["organization_status"]
+          organization_id: string
         }
         Returns: undefined
       }
