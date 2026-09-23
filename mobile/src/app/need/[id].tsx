@@ -19,7 +19,7 @@ import { openDirections } from '@/lib/directions';
 import { errorMessage, formatQuantity, formatWindow, lower } from '@/lib/format';
 import { categoryLabel } from '@/lib/labels';
 import { scheduleDropoffReminder } from '@/lib/reminders';
-import { describeRepeat } from '@/lib/repeat';
+import { describeRepeat, ruleFromNeed } from '@/lib/repeat';
 import { formatClosesIn, isClosingSoon } from '@/lib/urgency';
 
 export default function NeedScreen() {
@@ -45,6 +45,7 @@ export default function NeedScreen() {
   const pledgeQuantity = Math.min(quantity, remaining);
   const window = formatWindow(data.dropoff_starts_at, data.dropoff_ends_at);
   const closingSoon = isClosingSoon(data.dropoff_ends_at);
+  const rule = ruleFromNeed(data);
   const acceptingPledges = data.status === 'open' && new Date(data.dropoff_ends_at) > new Date() && remaining > 0;
 
   async function pledge() {
@@ -93,9 +94,9 @@ export default function NeedScreen() {
             {formatClosesIn(data.dropoff_ends_at)}
           </ThemedText>
         ) : null}
-        {data.repeat_frequency ? (
+        {rule ? (
           <ThemedText type="small" themeColor="textSecondary">
-            this need comes back {describeRepeat(data.repeat_frequency, new Date(data.dropoff_starts_at))}.
+            this need comes back {describeRepeat(rule, new Date(data.dropoff_starts_at))}.
           </ThemedText>
         ) : null}
       </Card>

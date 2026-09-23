@@ -71,7 +71,12 @@ export type NeedFields = Pick<
   | 'unit'
   | 'dropoff_starts_at'
   | 'dropoff_ends_at'
-  | 'repeat_frequency'
+  | 'repeat_unit'
+  | 'repeat_interval'
+  | 'repeat_weekdays'
+  | 'repeat_month_mode'
+  | 'repeat_ends_after'
+  | 'repeat_until'
 >;
 
 /** Creates a need when `needId` is missing, otherwise updates it. Returns the need's id. */

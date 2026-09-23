@@ -15,7 +15,7 @@ import { Spacing } from '@/constants/theme';
 import type { Tables } from '@/lib/database.types';
 import { errorMessage, formatWindow, lower } from '@/lib/format';
 import { NEED_STATUS, ORGANIZATION_STATUS } from '@/lib/labels';
-import { repeatBadge } from '@/lib/repeat';
+import { repeatBadge, ruleFromNeed } from '@/lib/repeat';
 
 export default function OrganizationScreen() {
   const memberships = useMyOrganizations();
@@ -170,11 +170,12 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
 function StaffNeedCard({ need, showPostAgain }: { need: Tables<'needs'>; showPostAgain?: boolean }) {
   const ended = need.status === 'open' && new Date(need.dropoff_ends_at) <= new Date();
   const status = ended ? { label: 'ended', tone: 'neutral' as const } : NEED_STATUS[need.status];
+  const rule = ruleFromNeed(need);
   return (
     <Card onPress={() => router.push({ pathname: '/organization/need/[id]', params: { id: need.id } })}>
       <View style={styles.badges}>
         <Badge label={status.label} tone={status.tone} />
-        {need.repeat_frequency ? <Badge label={repeatBadge(need.repeat_frequency)} tone="accent" /> : null}
+        {rule ? <Badge label={repeatBadge(rule)} tone="accent" /> : null}
       </View>
       <ThemedText type="bold" style={styles.orgName}>
         {lower(need.title)}

@@ -16,7 +16,17 @@ import { errorMessage } from '@/lib/format';
 import { goBackOr } from '@/lib/navigation';
 import { deleteDraft, getDraft, newDraftId, saveDraft, type NeedDraft } from '@/lib/need-drafts';
 import { CATEGORIES, type NeedCategory } from '@/lib/labels';
-import { describeRepeat, REPEAT_OPTIONS, type RepeatFrequency } from '@/lib/repeat';
+import { RepeatEditor } from '@/components/repeat-editor';
+import {
+  describeRepeat,
+  matchPreset,
+  presetRule,
+  PRESET_OPTIONS,
+  ruleFromNeed,
+  ruleToColumns,
+  type RepeatPreset,
+  type RepeatRule,
+} from '@/lib/repeat';
 
 /**
  * Post a new need (`organizationId` param), edit one (`needId`), or post a
@@ -96,7 +106,7 @@ function startingFields({ need, draft, template }: { need?: Tables<'needs'>; dra
     startsAt: start.toISOString(),
     endsAt: end.toISOString(),
     // Editing keeps the current setting; a new need or a copy starts one-off.
-    repeat: need?.repeat_frequency ?? null,
+    repeat: need ? ruleFromNeed(need) : null,
   };
 }
 
@@ -123,7 +133,10 @@ function NeedForm({
   const [details, setDetails] = useState(initial.details);
   const [quantity, setQuantity] = useState(initial.quantity);
   const [unit, setUnit] = useState(initial.unit);
-  const [repeat, setRepeat] = useState<RepeatFrequency | null>(initial.repeat);
+  const [repeat, setRepeat] = useState<RepeatRule | null>(initial.repeat);
+  // "custom…" stays open once picked, even if the rule happens to match a preset.
+  const [customOpen, setCustomOpen] = useState(() => matchPreset(initial.repeat) === 'custom');
+  const preset: RepeatPreset = customOpen ? 'custom' : matchPreset(repeat);
   const [startsAt, setStartsAt] = useState(() => new Date(initial.startsAt));
   const [endsAt, setEndsAt] = useState(() => new Date(initial.endsAt));
 
@@ -191,7 +204,7 @@ function NeedForm({
           unit: unit.trim(),
           dropoff_starts_at: startsAt.toISOString(),
           dropoff_ends_at: endsAt.toISOString(),
-          repeat_frequency: repeat,
+          ...ruleToColumns(repeat),
         },
       });
       if (need) {
@@ -265,13 +278,22 @@ function NeedForm({
         <ThemedText type="smallBold">repeat</ThemedText>
         <ChipGroup
           scroll
-          options={REPEAT_OPTIONS}
-          value={repeat ?? 'none'}
-          onChange={(value) => setRepeat(value === 'none' ? null : value)}
+          options={PRESET_OPTIONS}
+          value={preset}
+          onChange={(next) => {
+            if (next === 'custom') {
+              setCustomOpen(true);
+              setRepeat((current) => current ?? presetRule('weekly'));
+            } else {
+              setCustomOpen(false);
+              setRepeat(presetRule(next));
+            }
+          }}
         />
+        {customOpen && repeat ? <RepeatEditor rule={repeat} start={startsAt} onChange={setRepeat} /> : null}
         <ThemedText type="small" themeColor="textSecondary">
           {repeat
-            ? `${describeRepeat(repeat, startsAt)}, at the same time. we post the next one after each drop-off ends, and stop by ourselves if nobody pledges ${repeat === 'daily' ? '7 days' : '3 times'} in a row.`
+            ? `${customOpen ? '' : `${describeRepeat(repeat, startsAt)}, at the same time. `}we post the next one after each drop-off ends, and stop by ourselves if nobody pledges ${repeat.unit === 'day' && repeat.interval === 1 ? '7 days' : '3 times'} in a row.`
             : 'post it once. you can always post it again later.'}
         </ThemedText>
       </View>

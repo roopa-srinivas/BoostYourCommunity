@@ -1,5 +1,5 @@
 import type { NeedCategory } from '@/lib/labels';
-import type { RepeatFrequency } from '@/lib/repeat';
+import { presetRule, type RepeatPreset, type RepeatRule } from '@/lib/repeat';
 
 /**
  * Unfinished "post a need" forms, kept on this device per organization.
@@ -18,7 +18,7 @@ export type NeedDraft = {
     unit: string;
     startsAt: string;
     endsAt: string;
-    repeat: RepeatFrequency | null;
+    repeat: RepeatRule | null;
   };
 };
 
@@ -35,12 +35,21 @@ export function listDrafts(organizationId: string): NeedDraft[] {
   }
 }
 
-/** Drafts saved before other frequencies existed had a weekly on/off flag. */
+/**
+ * Older drafts stored a weekly on/off flag, then one of a few fixed
+ * frequencies ('daily', 'weekly', 'biweekly', 'monthly'); turn both into rules.
+ */
 function upgrade(draft: NeedDraft): NeedDraft {
-  const fields = draft.fields as NeedDraft['fields'] & { repeatsWeekly?: boolean };
-  if (fields.repeat !== undefined) return draft;
-  const { repeatsWeekly, ...rest } = fields;
-  return { ...draft, fields: { ...rest, repeat: repeatsWeekly ? 'weekly' : null } };
+  const fields = draft.fields as Omit<NeedDraft['fields'], 'repeat'> & {
+    repeat?: RepeatRule | string | null;
+    repeatsWeekly?: boolean;
+  };
+  const { repeatsWeekly, repeat, ...rest } = fields;
+  if (repeat !== undefined && (repeat === null || typeof repeat === 'object')) {
+    return { ...draft, fields: { ...rest, repeat } };
+  }
+  const legacy = typeof repeat === 'string' ? repeat : repeatsWeekly ? 'weekly' : 'none';
+  return { ...draft, fields: { ...rest, repeat: presetRule(legacy as RepeatPreset) } };
 }
 
 export function getDraft(organizationId: string, draftId: string) {

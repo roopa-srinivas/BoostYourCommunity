@@ -107,10 +107,16 @@ export type Database = {
           organization_id: string
           quantity_committed: number
           quantity_needed: number
-          repeat_frequency:
-            | Database["public"]["Enums"]["repeat_frequency"]
+          repeat_anchor: string | null
+          repeat_ends_after: number | null
+          repeat_interval: number
+          repeat_month_mode:
+            | Database["public"]["Enums"]["repeat_month_mode"]
             | null
           repeat_series: string | null
+          repeat_unit: Database["public"]["Enums"]["repeat_unit"] | null
+          repeat_until: string | null
+          repeat_weekdays: number[] | null
           status: Database["public"]["Enums"]["need_status"]
           title: string
           unit: string
@@ -127,10 +133,16 @@ export type Database = {
           organization_id: string
           quantity_committed?: number
           quantity_needed: number
-          repeat_frequency?:
-            | Database["public"]["Enums"]["repeat_frequency"]
+          repeat_anchor?: string | null
+          repeat_ends_after?: number | null
+          repeat_interval?: number
+          repeat_month_mode?:
+            | Database["public"]["Enums"]["repeat_month_mode"]
             | null
           repeat_series?: string | null
+          repeat_unit?: Database["public"]["Enums"]["repeat_unit"] | null
+          repeat_until?: string | null
+          repeat_weekdays?: number[] | null
           status?: Database["public"]["Enums"]["need_status"]
           title: string
           unit?: string
@@ -147,10 +159,16 @@ export type Database = {
           organization_id?: string
           quantity_committed?: number
           quantity_needed?: number
-          repeat_frequency?:
-            | Database["public"]["Enums"]["repeat_frequency"]
+          repeat_anchor?: string | null
+          repeat_ends_after?: number | null
+          repeat_interval?: number
+          repeat_month_mode?:
+            | Database["public"]["Enums"]["repeat_month_mode"]
             | null
           repeat_series?: string | null
+          repeat_unit?: Database["public"]["Enums"]["repeat_unit"] | null
+          repeat_until?: string | null
+          repeat_weekdays?: number[] | null
           status?: Database["public"]["Enums"]["need_status"]
           title?: string
           unit?: string
@@ -493,7 +511,8 @@ export type Database = {
         | "other"
       organization_status: "pending" | "approved" | "suspended"
       pledge_status: "pledged" | "received" | "no_show" | "cancelled"
-      repeat_frequency: "daily" | "weekly" | "biweekly" | "monthly"
+      repeat_month_mode: "date" | "weekday"
+      repeat_unit: "day" | "week" | "month"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -635,7 +654,8 @@ export const Constants = {
       ],
       organization_status: ["pending", "approved", "suspended"],
       pledge_status: ["pledged", "received", "no_show", "cancelled"],
-      repeat_frequency: ["daily", "weekly", "biweekly", "monthly"],
+      repeat_month_mode: ["date", "weekday"],
+      repeat_unit: ["day", "week", "month"],
     },
   },
 } as const

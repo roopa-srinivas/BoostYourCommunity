@@ -15,7 +15,7 @@ import { confirm } from '@/lib/confirm';
 import { formatCheckinCode } from '@/lib/checkin';
 import { errorMessage, formatDay, formatQuantity, formatTime, formatWindow, lower } from '@/lib/format';
 import { NEED_STATUS, PLEDGE_STATUS } from '@/lib/labels';
-import { describeRepeat } from '@/lib/repeat';
+import { describeRepeat, ruleFromNeed } from '@/lib/repeat';
 
 export default function StaffNeedScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -40,6 +40,7 @@ export default function StaffNeedScreen() {
   // Same wording as the organization tab: an open need whose window has passed is "ended".
   const ended = data.status === 'open' && new Date(data.dropoff_ends_at).getTime() <= now;
   const status = ended ? { label: 'ended', tone: 'neutral' as const } : NEED_STATUS[data.status];
+  const rule = ruleFromNeed(data);
   const all = pledges.data ?? [];
   const received = all.filter((p) => p.status === 'received').reduce((sum, p) => sum + p.quantity, 0);
   const expected = all.filter((p) => p.status === 'pledged');
@@ -98,9 +99,9 @@ export default function StaffNeedScreen() {
           style={styles.fullWidth}
           onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: data.id } })}
         />
-        {data.repeat_frequency ? (
+        {rule ? (
           <ThemedText type="small" themeColor="textSecondary" style={styles.repeat}>
-            repeats {describeRepeat(data.repeat_frequency, new Date(data.dropoff_starts_at))} ·{' '}
+            repeats {describeRepeat(rule, new Date(data.dropoff_starts_at))} ·{' '}
             <ThemedText
               type="link"
               accessibilityRole="button"
