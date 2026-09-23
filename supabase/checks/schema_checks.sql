@@ -146,3 +146,50 @@ select pg_temp.ok('pledge counts toward the need',
 delete from auth.users where id = 'dddddddd-0000-4000-8000-000000000004';
 select pg_temp.ok('deleting the donor''s account gives their pledge back to the need',
   (select quantity_committed from public.needs where title = 'Fresh fruit') = 0);
+
+-- Community: leaderboard and heat map -------------------------------------------
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('eeeeeeee-0000-4000-8000-000000000005', 'eve@example.com', '{"display_name":"Eve"}'),
+  ('ffffffff-0000-4000-8000-000000000006', 'fay@example.com', '{"display_name":"Fay"}');
+select pg_temp.act_as('eeeeeeee-0000-4000-8000-000000000005');
+insert into public.pledges (need_id, quantity) select socks, 5 from ids;
+insert into public.pledges (need_id, quantity) select socks, 2 from ids;
+reset role;
+select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
+select public.resolve_pledge((select id from public.pledges where donor_id = 'eeeeeeee-0000-4000-8000-000000000005' and quantity = 5), 'received');
+reset role;
+select pg_temp.act_as('ffffffff-0000-4000-8000-000000000006');
+insert into public.follows (followee_id) values ('eeeeeeee-0000-4000-8000-000000000005');
+select pg_temp.ok('leaderboard shows me and the people I follow, nobody else',
+  (select string_agg(display_name || '=' || items_given, ',' order by items_given desc, display_name)
+   from public.leaderboard_this_month()) = 'Eve=5,Fay=0');
+select pg_temp.ok('only confirmed items count (Eve''s unconfirmed 2 are left out)',
+  (select items_given from public.leaderboard_this_month() where display_name = 'Eve') = 5);
+select pg_temp.ok('leaderboard marks my own row',
+  (select bool_and(is_me = (display_name = 'Fay')) from public.leaderboard_this_month()));
+reset role;
+select pg_temp.act_as('eeeeeeee-0000-4000-8000-000000000005');
+select pg_temp.ok('someone who follows nobody sees only themselves',
+  (select count(*) from public.leaderboard_this_month()) = 1);
+reset role;
+select pg_temp.act_as(null);
+select pg_temp.rejects('signed-out visitors cannot see the leaderboard', 'select * from public.leaderboard_this_month()');
+select pg_temp.ok('heat map totals confirmed items per organization',
+  (select items_received = 5 and donors = 1 from public.community_heat(37.7854, -122.3968, 20000)
+   where organization_name = 'SoMa Harbor Shelter'));
+select pg_temp.ok('heat map leaves out pending organizations',
+  not exists (select 1 from public.community_heat(37.77, -122.44, 20000) where organization_name = 'Haight Street Outreach'));
+reset role;
+-- Backdate Eve's confirmation to 40 days ago: outside the 30-day heat window
+-- and outside this month's leaderboard.
+update public.pledges set resolved_at = now() - interval '40 days'
+where donor_id = 'eeeeeeee-0000-4000-8000-000000000005' and status = 'received';
+select pg_temp.act_as('ffffffff-0000-4000-8000-000000000006');
+select pg_temp.ok('heat map ignores confirmations older than the window',
+  (select items_received from public.community_heat(37.7854, -122.3968, 20000, 30)
+   where organization_name = 'SoMa Harbor Shelter') = 0
+  and (select items_received from public.community_heat(37.7854, -122.3968, 20000, 60)
+   where organization_name = 'SoMa Harbor Shelter') = 5);
+select pg_temp.ok('leaderboard ignores confirmations from earlier months',
+  (select items_given from public.leaderboard_this_month() where display_name = 'Eve') = 0);
+reset role;

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { cancelDropoffReminder } from '@/lib/reminders';
 import { supabase } from '@/lib/supabase';
 import { useUserId } from '@/providers/auth-provider';
 
@@ -22,7 +23,7 @@ export function useMyPledges() {
       const { data, error } = await supabase
         .from('pledges')
         .select(
-          'id, quantity, status, created_at, need:needs(id, title, unit, dropoff_starts_at, dropoff_ends_at, organization:organizations(name, address))',
+          'id, quantity, status, created_at, resolved_at, need:needs(id, title, unit, dropoff_starts_at, dropoff_ends_at, organization:organizations(name, address))',
         )
         .eq('donor_id', userId)
         .order('created_at', { ascending: false });
@@ -54,9 +55,15 @@ export function useNeedPledges(needId: string | undefined) {
 export function useCreatePledge() {
   const invalidate = useInvalidatePledgesAndNeeds();
   return useMutation({
+    /** Returns the new pledge's id. */
     mutationFn: async ({ needId, quantity }: { needId: string; quantity: number }) => {
-      const { error } = await supabase.from('pledges').insert({ need_id: needId, quantity });
+      const { data, error } = await supabase
+        .from('pledges')
+        .insert({ need_id: needId, quantity })
+        .select('id')
+        .single();
       if (error) throw error;
+      return data.id;
     },
     onSuccess: invalidate,
   });
@@ -68,6 +75,7 @@ export function useCancelPledge() {
     mutationFn: async (pledgeId: string) => {
       const { error } = await supabase.rpc('cancel_pledge', { pledge_id: pledgeId });
       if (error) throw error;
+      await cancelDropoffReminder(pledgeId);
     },
     onSuccess: invalidate,
   });
