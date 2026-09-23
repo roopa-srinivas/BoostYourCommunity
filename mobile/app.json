@@ -22,7 +22,7 @@
       "package": "com.roopasrinivas.boostyourcommunity"
     },
     "web": {
-      "output": "static",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -35,7 +35,13 @@
           "imageWidth": 76
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Boost Your Community uses your location to show donation needs near you."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

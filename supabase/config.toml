@@ -242,6 +242,18 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Phase 3: once a custom SMTP provider is configured, switch sign-in to 6-digit
+# codes by uncommenting these (the free tier rejects template changes without
+# custom SMTP). Apply auth settings individually rather than with a blanket
+# `supabase config push`: this file's local-dev values differ from the hosted
+# project's.
+# [auth.email.template.magic_link]
+# subject = "Your Boost Your Community sign-in code"
+# content_path = "./supabase/templates/sign_in_code.html"
+# [auth.email.template.confirmation]
+# subject = "Your Boost Your Community sign-in code"
+# content_path = "./supabase/templates/sign_in_code.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
