@@ -18,6 +18,7 @@ import { SAN_FRANCISCO, useUserLocation } from '@/hooks/use-user-location';
 import { useTheme } from '@/hooks/use-theme';
 import { errorMessage, formatDistance, lower } from '@/lib/format';
 import { CATEGORIES, type NeedCategory } from '@/lib/labels';
+import { NEED_SORTS, sortNeeds, type NeedSort } from '@/lib/urgency';
 
 const CATEGORY_FILTERS = [{ value: 'all' as const, label: 'anything' }, ...CATEGORIES];
 
@@ -29,13 +30,15 @@ export default function GiveScreen() {
   const [showSanFrancisco, setShowSanFrancisco] = useState(false);
   const [category, setCategory] = useState<NeedCategory | 'all'>('all');
   const [selectedOrganizationId, setSelectedOrganizationId] = useState<string | null>(null);
+  const [sort, setSort] = useState<NeedSort>('nearest');
 
   const center =
     showSanFrancisco || userLocation.status === 'unavailable' ? SAN_FRANCISCO : userLocation.location;
   const needs = useNearbyNeeds(center, category === 'all' ? null : category);
 
-  const visibleNeeds = (needs.data ?? []).filter(
-    (need) => !selectedOrganizationId || need.organization_id === selectedOrganizationId,
+  const visibleNeeds = sortNeeds(
+    (needs.data ?? []).filter((need) => !selectedOrganizationId || need.organization_id === selectedOrganizationId),
+    sort,
   );
   const selectedOrganizationName = lower(visibleNeeds[0]?.organization_name);
 
@@ -91,9 +94,18 @@ export default function GiveScreen() {
       ) : null}
 
       <View style={styles.sectionHeader}>
-        <ThemedText type="sectionTitle">
-          {selectedOrganizationName && selectedOrganizationId ? selectedOrganizationName : 'needs near you'}
-        </ThemedText>
+        {selectedOrganizationName && selectedOrganizationId ? (
+          <ThemedText
+            type="sectionTitle"
+            themeColor="tint"
+            accessibilityRole="link"
+            accessibilityHint="opens the organization's page"
+            onPress={() => router.push({ pathname: '/org/[id]', params: { id: selectedOrganizationId } })}>
+            {selectedOrganizationName} ›
+          </ThemedText>
+        ) : (
+          <ThemedText type="sectionTitle">needs near you</ThemedText>
+        )}
         {needs.data ? (
           <ThemedText type="small" themeColor="textSecondary">
             {visibleNeeds.length} open
@@ -104,6 +116,8 @@ export default function GiveScreen() {
       {selectedOrganizationId ? (
         <Button variant="secondary" label="show everything nearby" onPress={() => setSelectedOrganizationId(null)} />
       ) : null}
+
+      {visibleNeeds.length > 1 ? <ChipGroup scroll options={NEED_SORTS} value={sort} onChange={setSort} /> : null}
 
       {needs.error ? <ErrorText>{errorMessage(needs.error)}</ErrorText> : null}
 

@@ -52,6 +52,14 @@
         {
           "color": "#2F5D46"
         }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Boost Your Community uses the camera so shelter staff can scan donors\u2019 check-in codes.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
       ]
     ],
     "experiments": {

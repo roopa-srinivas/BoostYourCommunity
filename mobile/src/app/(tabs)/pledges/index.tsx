@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { useCancelPledge, useMyPledges, type MyPledge } from '@/api/pledges';
 import { ThemedText } from '@/components/themed-text';
+import { CheckinCode } from '@/components/checkin-code';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -46,6 +47,7 @@ export default function MyPledgesScreen() {
       ) : (
         upcoming.map((pledge) => (
           <PledgeCard key={pledge.id} pledge={pledge}>
+            <CheckinCode code={pledge.checkin_code} />
             <View style={styles.actions}>
               {pledge.need?.organization ? (
                 <Button

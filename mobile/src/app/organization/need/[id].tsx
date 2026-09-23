@@ -11,6 +11,7 @@ import { EmptyState, ErrorText, Loading } from '@/components/ui/message';
 import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { confirm } from '@/lib/confirm';
+import { formatCheckinCode } from '@/lib/checkin';
 import { errorMessage, formatDay, formatQuantity, formatTime, formatWindow, lower } from '@/lib/format';
 import { NEED_STATUS, PLEDGE_STATUS } from '@/lib/labels';
 
@@ -164,7 +165,7 @@ function PledgeRow({ pledge, unit, children }: { pledge: Pledge; unit: string; c
         <Badge label={status.label} tone={status.tone} />
       </View>
       <ThemedText type="small" themeColor="textSecondary">
-        pledged {formatDay(createdAt)} at {formatTime(createdAt)}
+        pledged {formatDay(createdAt)} at {formatTime(createdAt)} · code {formatCheckinCode(pledge.checkin_code)}
       </ThemedText>
       {children}
     </Card>

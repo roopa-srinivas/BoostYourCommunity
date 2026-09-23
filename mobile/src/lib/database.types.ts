@@ -199,10 +199,13 @@ export type Database = {
       }
       organizations: {
         Row: {
+          accepts: string | null
           address: string
           created_at: string
           created_by: string | null
           description: string | null
+          does_not_accept: string | null
+          hours: string | null
           id: string
           kind: Database["public"]["Enums"]["organization_kind"]
           location: unknown
@@ -212,10 +215,13 @@ export type Database = {
           website: string | null
         }
         Insert: {
+          accepts?: string | null
           address: string
           created_at?: string
           created_by?: string | null
           description?: string | null
+          does_not_accept?: string | null
+          hours?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["organization_kind"]
           location: unknown
@@ -225,10 +231,13 @@ export type Database = {
           website?: string | null
         }
         Update: {
+          accepts?: string | null
           address?: string
           created_at?: string
           created_by?: string | null
           description?: string | null
+          does_not_accept?: string | null
+          hours?: string | null
           id?: string
           kind?: Database["public"]["Enums"]["organization_kind"]
           location?: unknown
@@ -249,6 +258,7 @@ export type Database = {
       }
       pledges: {
         Row: {
+          checkin_code: string
           created_at: string
           donor_id: string
           id: string
@@ -260,6 +270,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          checkin_code?: string
           created_at?: string
           donor_id?: string
           id?: string
@@ -271,6 +282,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          checkin_code?: string
           created_at?: string
           donor_id?: string
           id?: string
@@ -380,6 +392,7 @@ export type Database = {
           unit: string
         }[]
       }
+      new_checkin_code: { Args: never; Returns: string }
       resolve_pledge: {
         Args: {
           outcome: Database["public"]["Enums"]["pledge_status"]

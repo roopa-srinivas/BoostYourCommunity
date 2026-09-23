@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Spacing } from '@/constants/theme';
 import { formatDistance, formatQuantity, formatWindow, lower } from '@/lib/format';
+import { formatClosesIn, isClosingSoon } from '@/lib/urgency';
 
 export function NeedCard({ need, onPress }: { need: NearbyNeed; onPress: () => void }) {
   const pledged = need.quantity_needed - need.quantity_remaining;
@@ -35,9 +36,15 @@ export function NeedCard({ need, onPress }: { need: NearbyNeed; onPress: () => v
           <ThemedText type="small" themeColor="textSecondary" style={styles.flex}>
             <ThemedText type="smallBold">{formatQuantity(need.quantity_remaining, need.unit)}</ThemedText> still needed
           </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
-          </ThemedText>
+          {isClosingSoon(need.dropoff_ends_at) ? (
+            <ThemedText type="smallBold" themeColor="accent">
+              {formatClosesIn(need.dropoff_ends_at)}
+            </ThemedText>
+          ) : (
+            <ThemedText type="small" themeColor="textSecondary">
+              {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
+            </ThemedText>
+          )}
         </View>
       </View>
     </Card>
