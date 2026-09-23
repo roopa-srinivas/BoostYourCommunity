@@ -6,6 +6,7 @@ import type { Coordinates, NearbyNeed } from '@/api/needs';
 import { ThemedText } from '@/components/themed-text';
 import { FontFamily, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { lower } from '@/lib/format';
 
 type NeedsMapProps = {
   center: Coordinates;
@@ -26,7 +27,7 @@ export function NeedsMap({ center, needs, selectedOrganizationId, onSelectOrgani
       else
         byId.set(need.organization_id, {
           id: need.organization_id,
-          name: need.organization_name,
+          name: lower(need.organization_name),
           latitude: need.org_lat,
           longitude: need.org_lng,
           count: 1,

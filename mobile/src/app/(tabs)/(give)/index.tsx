@@ -16,7 +16,7 @@ import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { SAN_FRANCISCO, useUserLocation } from '@/hooks/use-user-location';
 import { useTheme } from '@/hooks/use-theme';
-import { errorMessage, formatDistance } from '@/lib/format';
+import { errorMessage, formatDistance, lower } from '@/lib/format';
 import { CATEGORIES, type NeedCategory } from '@/lib/labels';
 
 const CATEGORY_FILTERS = [{ value: 'all' as const, label: 'anything' }, ...CATEGORIES];
@@ -37,14 +37,14 @@ export default function GiveScreen() {
   const visibleNeeds = (needs.data ?? []).filter(
     (need) => !selectedOrganizationId || need.organization_id === selectedOrganizationId,
   );
-  const selectedOrganizationName = visibleNeeds[0]?.organization_name;
+  const selectedOrganizationName = lower(visibleNeeds[0]?.organization_name);
 
   let where = 'finding your location…';
   if (showSanFrancisco) where = 'san francisco';
   else if (userLocation.status === 'found') where = 'near you';
   else if (userLocation.status === 'unavailable') where = 'san francisco (location is off)';
 
-  const firstName = profile.data?.display_name.split(' ')[0];
+  const firstName = lower(profile.data?.display_name.split(' ')[0]);
 
   return (
     <Screen

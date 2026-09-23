@@ -6,7 +6,7 @@ import { ThemedText } from '@/components/themed-text';
 import { Card } from '@/components/ui/card';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Spacing } from '@/constants/theme';
-import { formatDistance, formatQuantity, formatWindow } from '@/lib/format';
+import { formatDistance, formatQuantity, formatWindow, lower } from '@/lib/format';
 
 export function NeedCard({ need, onPress }: { need: NearbyNeed; onPress: () => void }) {
   const pledged = need.quantity_needed - need.quantity_remaining;
@@ -16,14 +16,14 @@ export function NeedCard({ need, onPress }: { need: NearbyNeed; onPress: () => v
       <View style={styles.body}>
         <View style={styles.titleRow}>
           <ThemedText type="bold" style={styles.title} numberOfLines={2}>
-            {need.title}
+            {lower(need.title)}
           </ThemedText>
           <ThemedText type="small" themeColor="textSecondary">
             {formatDistance(need.distance_m)}
           </ThemedText>
         </View>
         <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
-          {need.organization_name}
+          {lower(need.organization_name)}
         </ThemedText>
         <View style={styles.progress}>
           <ProgressBar

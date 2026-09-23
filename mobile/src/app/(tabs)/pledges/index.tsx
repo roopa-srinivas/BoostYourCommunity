@@ -11,7 +11,7 @@ import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { confirm } from '@/lib/confirm';
 import { openDirections } from '@/lib/directions';
-import { errorMessage, formatQuantity, formatWindow } from '@/lib/format';
+import { errorMessage, formatQuantity, formatWindow, lower } from '@/lib/format';
 import { PLEDGE_STATUS } from '@/lib/labels';
 
 export default function MyPledgesScreen() {
@@ -88,11 +88,11 @@ function PledgeCard({ pledge, children }: { pledge: MyPledge; children?: React.R
     <Card>
       <Badge label={status.label} tone={status.tone} />
       <ThemedText type="bold" style={styles.title}>
-        {formatQuantity(pledge.quantity, need?.unit ?? 'items')} · {need?.title}
+        {formatQuantity(pledge.quantity, need?.unit ?? 'items')} · {lower(need?.title)}
       </ThemedText>
       {need?.organization ? (
         <ThemedText type="small" themeColor="textSecondary">
-          {need.organization.name}, {need.organization.address}
+          {lower(need.organization.name)}, {lower(need.organization.address)}
         </ThemedText>
       ) : null}
       {need ? (

@@ -14,7 +14,7 @@ import { Screen } from '@/components/ui/screen';
 import { Stepper } from '@/components/ui/stepper';
 import { Spacing } from '@/constants/theme';
 import { openDirections } from '@/lib/directions';
-import { errorMessage, formatQuantity, formatWindow } from '@/lib/format';
+import { errorMessage, formatQuantity, formatWindow, lower } from '@/lib/format';
 import { categoryLabel } from '@/lib/labels';
 
 export default function NeedScreen() {
@@ -58,8 +58,8 @@ export default function NeedScreen() {
         <ThemedText type="small" themeColor="textSecondary">
           {categoryLabel(data.category)}
         </ThemedText>
-        <ThemedText type="subtitle">{data.title}</ThemedText>
-        {data.details ? <ThemedText themeColor="textSecondary">{data.details}</ThemedText> : null}
+        <ThemedText type="subtitle">{lower(data.title)}</ThemedText>
+        {data.details ? <ThemedText themeColor="textSecondary">{lower(data.details)}</ThemedText> : null}
       </View>
 
       <Card style={styles.cardGap}>
@@ -79,9 +79,9 @@ export default function NeedScreen() {
       {organization ? (
         <Card style={styles.cardGap}>
           <View>
-            <ThemedText type="bold">{organization.name}</ThemedText>
+            <ThemedText type="bold">{lower(organization.name)}</ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {organization.address}
+              {lower(organization.address)}
             </ThemedText>
             {organization.phone ? (
               <ThemedText type="small" themeColor="textSecondary">
@@ -97,7 +97,7 @@ export default function NeedScreen() {
         <Card style={styles.cardGap}>
           <ThemedText type="sectionTitle">thank you!</ThemedText>
           <ThemedText>
-            you pledged {formatQuantity(pledged, data.unit)}. please drop them off at {organization?.name},{' '}
+            you pledged {formatQuantity(pledged, data.unit)}. please drop them off at {lower(organization?.name)},{' '}
             {window}. the staff will confirm when they arrive.
           </ThemedText>
           <Button label="see my pledges" onPress={() => router.dismissTo('/pledges')} />

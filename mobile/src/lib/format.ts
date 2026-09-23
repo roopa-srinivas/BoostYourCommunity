@@ -13,6 +13,15 @@ export function formatQuantity(quantity: number, unit: string) {
   return `${quantity} ${singular}`;
 }
 
+/**
+ * The app's voice is lowercase, so names and titles from the database are
+ * shown lowercase too. Only for display: the stored value keeps its
+ * capitalization (directions, editing and so on use the original).
+ */
+export function lower(text: string | null | undefined) {
+  return text?.toLowerCase() ?? '';
+}
+
 export function formatDistance(meters: number) {
   const miles = meters / METERS_PER_MILE;
   return miles < 0.1 ? 'nearby' : `${miles.toFixed(1)} mi`;

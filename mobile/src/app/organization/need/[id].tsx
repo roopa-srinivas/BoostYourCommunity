@@ -11,7 +11,7 @@ import { EmptyState, ErrorText, Loading } from '@/components/ui/message';
 import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { confirm } from '@/lib/confirm';
-import { errorMessage, formatDay, formatQuantity, formatTime, formatWindow } from '@/lib/format';
+import { errorMessage, formatDay, formatQuantity, formatTime, formatWindow, lower } from '@/lib/format';
 import { NEED_STATUS, PLEDGE_STATUS } from '@/lib/labels';
 
 export default function StaffNeedScreen() {
@@ -55,12 +55,12 @@ export default function StaffNeedScreen() {
         need.refetch();
         pledges.refetch();
       }}>
-      <Stack.Screen options={{ title: data.title }} />
+      <Stack.Screen options={{ title: lower(data.title) }} />
 
       <Card>
         <Badge label={status.label} tone={status.tone} />
         <ThemedText type="sectionTitle" style={styles.title}>
-          {data.title}
+          {lower(data.title)}
         </ThemedText>
         <ThemedText type="small">
           {data.quantity_committed} of {data.quantity_needed} {data.unit} pledged · {received} received

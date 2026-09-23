@@ -13,7 +13,7 @@ import { EmptyState, ErrorText, Loading } from '@/components/ui/message';
 import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import type { Tables } from '@/lib/database.types';
-import { errorMessage, formatWindow } from '@/lib/format';
+import { errorMessage, formatWindow, lower } from '@/lib/format';
 import { NEED_STATUS, ORGANIZATION_STATUS } from '@/lib/labels';
 
 export default function OrganizationScreen() {
@@ -49,7 +49,7 @@ export default function OrganizationScreen() {
           {organizations.length > 1 ? (
             <ChipGroup
               scroll
-              options={organizations.map((o) => ({ value: o.id, label: o.name }))}
+              options={organizations.map((o) => ({ value: o.id, label: lower(o.name) }))}
               value={organization.id}
               onChange={setChosenId}
             />
@@ -57,10 +57,10 @@ export default function OrganizationScreen() {
           <Card>
             <Badge label={status.label} tone={status.tone} />
             <ThemedText type="sectionTitle" style={styles.orgName}>
-              {organization.name}
+              {lower(organization.name)}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {organization.address}
+              {lower(organization.address)}
             </ThemedText>
             {organization.status === 'pending' ? (
               <ThemedText type="small" style={styles.note}>
@@ -134,7 +134,7 @@ function StaffNeedCard({ need }: { need: Tables<'needs'> }) {
     <Card onPress={() => router.push({ pathname: '/organization/need/[id]', params: { id: need.id } })}>
       <Badge label={status.label} tone={status.tone} />
       <ThemedText type="bold" style={styles.orgName}>
-        {need.title}
+        {lower(need.title)}
       </ThemedText>
       <ThemedText type="small">
         {need.quantity_committed} of {need.quantity_needed} {need.unit} pledged
