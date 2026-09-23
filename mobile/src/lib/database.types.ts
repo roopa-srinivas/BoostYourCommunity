@@ -161,6 +161,58 @@ export type Database = {
           },
         ]
       }
+      organization_invites: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          organization_id: string
+          used_at: string | null
+          used_by: string | null
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          organization_id: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          organization_id?: string
+          used_at?: string | null
+          used_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_invites_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invites_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_invites_used_by_fkey"
+            columns: ["used_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_members: {
         Row: {
           created_at: string
@@ -355,8 +407,13 @@ export type Database = {
           organization_name: string
         }[]
       }
+      create_staff_invite: {
+        Args: { organization_id: string }
+        Returns: string
+      }
       delete_my_account: { Args: never; Returns: undefined }
       expire_stale_pledges: { Args: never; Returns: number }
+      join_organization: { Args: { invite_code: string }; Returns: string }
       leaderboard_this_month: {
         Args: never
         Returns: {

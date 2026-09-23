@@ -311,3 +311,69 @@ select pg_temp.ok('codes are unique among pledges waiting for drop-off',
 select pg_temp.rejects('two pending pledges cannot share a code',
   $$update public.pledges set checkin_code = (select code from toiletries_code)
     where status = 'pledged' and checkin_code <> (select code from toiletries_code)$$);
+
+-- Staff invites -------------------------------------------------------------------------------
+-- Sam owns SoMa Harbor Shelter (org 2). Hal is a new user who'll be invited.
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('33333333-0000-4000-8000-000000000009', 'hal@example.com', '{"display_name":"Hal"}');
+select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
+create temp table invite as select public.create_staff_invite('00000000-0000-4000-8000-000000000002') as code;
+select pg_temp.ok('owners can create an invite with a readable code',
+  (select code ~ '^[A-HJ-KM-NP-Z2-9]{6}$' from invite));
+select pg_temp.ok('owners can see their invites', (select count(*) from public.organization_invites) >= 1);
+select pg_temp.rejects('owners can no longer add staff directly',
+  $$insert into public.organization_members (organization_id, user_id) values ('00000000-0000-4000-8000-000000000002', '33333333-0000-4000-8000-000000000009')$$);
+reset role;
+grant select on invite to authenticated;
+select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
+select pg_temp.rejects('non-owners cannot create invites',
+  $$select public.create_staff_invite('00000000-0000-4000-8000-000000000002')$$);
+select pg_temp.ok('non-owners cannot see invites', (select count(*) from public.organization_invites) = 0);
+reset role;
+select pg_temp.act_as('33333333-0000-4000-8000-000000000009');
+select pg_temp.rejects('a made-up code does not work', $$select public.join_organization('ABCDEF')$$);
+select pg_temp.ok('joining with a valid code (typed lowercase with a space) makes you staff',
+  public.join_organization((select lower(substr(code, 1, 3)) || ' ' || lower(substr(code, 4)) from invite))
+  = '00000000-0000-4000-8000-000000000002');
+select pg_temp.ok('the new member is staff, not owner',
+  (select role from public.organization_members where user_id = '33333333-0000-4000-8000-000000000009') = 'staff');
+reset role;
+select pg_temp.act_as('aaaaaaaa-0000-4000-8000-000000000001');
+select pg_temp.rejects('an invite works only once', $$select public.join_organization((select code from invite))$$);
+reset role;
+select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
+create temp table invite2 as select public.create_staff_invite('00000000-0000-4000-8000-000000000002') as code;
+reset role;
+grant select on invite2 to authenticated;
+select pg_temp.act_as('33333333-0000-4000-8000-000000000009');
+select pg_temp.rejects('you cannot join an organization twice', $$select public.join_organization((select code from invite2))$$);
+reset role;
+update public.organization_invites set expires_at = now() - interval '1 minute' where code = (select code from invite2);
+select pg_temp.act_as('aaaaaaaa-0000-4000-8000-000000000001');
+select pg_temp.rejects('an expired invite does not work', $$select public.join_organization((select code from invite2))$$);
+reset role;
+select pg_temp.act_as('33333333-0000-4000-8000-000000000009');
+delete from public.organization_members where user_id = '33333333-0000-4000-8000-000000000009';
+select pg_temp.ok('staff can leave an organization',
+  not exists (select 1 from public.organization_members where user_id = '33333333-0000-4000-8000-000000000009'));
+reset role;
+select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
+create temp table invite3 as select public.create_staff_invite('00000000-0000-4000-8000-000000000002') as code;
+reset role;
+grant select on invite3 to authenticated;
+select pg_temp.act_as('33333333-0000-4000-8000-000000000009');
+select public.join_organization((select code from invite3));
+reset role;
+select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
+delete from public.organization_members where user_id = '33333333-0000-4000-8000-000000000009';
+reset role;
+select pg_temp.ok('non-members cannot remove staff',
+  exists (select 1 from public.organization_members where user_id = '33333333-0000-4000-8000-000000000009'));
+select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
+delete from public.organization_members where user_id = '33333333-0000-4000-8000-000000000009';
+delete from public.organization_members where user_id = 'cccccccc-0000-4000-8000-000000000003';
+reset role;
+select pg_temp.ok('owners can remove staff',
+  not exists (select 1 from public.organization_members where user_id = '33333333-0000-4000-8000-000000000009'));
+select pg_temp.ok('owners cannot remove themselves (an organization always keeps its owner)',
+  exists (select 1 from public.organization_members where user_id = 'cccccccc-0000-4000-8000-000000000003'));

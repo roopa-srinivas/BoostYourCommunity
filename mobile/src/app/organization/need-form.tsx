@@ -16,13 +16,20 @@ import { errorMessage } from '@/lib/format';
 import { goBackOr } from '@/lib/navigation';
 import { CATEGORIES, type NeedCategory } from '@/lib/labels';
 
-/** Post a new need (`organizationId` param) or edit one (`needId` param). */
+/**
+ * Post a new need (`organizationId` param), edit one (`needId`), or post a
+ * past need again with new dates (`copyFrom`).
+ */
 export default function NeedFormScreen() {
-  const { organizationId, needId } = useLocalSearchParams<{ organizationId?: string; needId?: string }>();
-  const existing = useNeed(needId);
+  const { organizationId, needId, copyFrom } = useLocalSearchParams<{
+    organizationId?: string;
+    needId?: string;
+    copyFrom?: string;
+  }>();
+  const existing = useNeed(needId ?? copyFrom);
 
-  if (needId && existing.isPending) return <Loading />;
-  if (needId && !existing.data) {
+  if ((needId || copyFrom) && existing.isPending) return <Loading />;
+  if ((needId || copyFrom) && !existing.data) {
     return (
       <Screen>
         <ErrorText>{existing.error ? errorMessage(existing.error) : 'this need could not be found.'}</ErrorText>
@@ -38,7 +45,26 @@ export default function NeedFormScreen() {
       </Screen>
     );
   }
-  return <NeedForm organizationId={orgId} need={existing.data} />;
+  return needId ? (
+    <NeedForm organizationId={orgId} need={existing.data} />
+  ) : (
+    <NeedForm organizationId={orgId} template={existing.data} />
+  );
+}
+
+/**
+ * The same window moved forward by whole calendar days (at least one) until
+ * it starts in the future: same local time of day (even across a daylight
+ * saving change) and the same length.
+ */
+function nextWindow(startsAt: string, endsAt: string, now = Date.now()) {
+  const originalStart = new Date(startsAt);
+  const length = new Date(endsAt).getTime() - originalStart.getTime();
+  const start = new Date(originalStart);
+  do {
+    start.setDate(start.getDate() + 1);
+  } while (start.getTime() <= now);
+  return { start, end: new Date(start.getTime() + length) };
 }
 
 function nextHour() {
@@ -47,16 +73,34 @@ function nextHour() {
   return date;
 }
 
-function NeedForm({ organizationId, need }: { organizationId: string; need?: Tables<'needs'> }) {
+function NeedForm({
+  organizationId,
+  need,
+  template,
+}: {
+  organizationId: string;
+  /** The need being edited. */
+  need?: Tables<'needs'>;
+  /** A past need to post again as a new one. */
+  template?: Tables<'needs'>;
+}) {
+  const source = need ?? template;
+  const [copiedWindow] = useState(() =>
+    template ? nextWindow(template.dropoff_starts_at, template.dropoff_ends_at) : null,
+  );
   const save = useSaveNeed();
-  const [category, setCategory] = useState<NeedCategory>(need?.category ?? 'food');
-  const [title, setTitle] = useState(need?.title ?? '');
-  const [details, setDetails] = useState(need?.details ?? '');
-  const [quantity, setQuantity] = useState(need ? String(need.quantity_needed) : '');
-  const [unit, setUnit] = useState(need?.unit ?? 'items');
-  const [startsAt, setStartsAt] = useState(() => (need ? new Date(need.dropoff_starts_at) : nextHour()));
+  const [category, setCategory] = useState<NeedCategory>(source?.category ?? 'food');
+  const [title, setTitle] = useState(source?.title ?? '');
+  const [details, setDetails] = useState(source?.details ?? '');
+  const [quantity, setQuantity] = useState(source ? String(source.quantity_needed) : '');
+  const [unit, setUnit] = useState(source?.unit ?? 'items');
+  const [startsAt, setStartsAt] = useState(() =>
+    need ? new Date(need.dropoff_starts_at) : (copiedWindow?.start ?? nextHour()),
+  );
   const [endsAt, setEndsAt] = useState(() =>
-    need ? new Date(need.dropoff_ends_at) : new Date(nextHour().getTime() + 3 * 3_600_000),
+    need
+      ? new Date(need.dropoff_ends_at)
+      : (copiedWindow?.end ?? new Date(nextHour().getTime() + 3 * 3_600_000)),
   );
   const [error, setError] = useState<string | null>(null);
 
@@ -92,7 +136,13 @@ function NeedForm({ organizationId, need }: { organizationId: string; need?: Tab
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: need ? 'edit need' : 'post a need' }} />
+      <Stack.Screen options={{ title: need ? 'edit need' : template ? 'post again' : 'post a need' }} />
+      {template ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          copied from a past need, with a new drop-off window at the same time of day. check the dates and how many
+          you need.
+        </ThemedText>
+      ) : null}
 
       <View style={styles.field}>
         <ThemedText type="smallBold">category</ThemedText>

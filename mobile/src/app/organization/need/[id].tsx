@@ -1,4 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useNeed, useSetNeedStatus } from '@/api/needs';
@@ -21,6 +22,8 @@ export default function StaffNeedScreen() {
   const pledges = useNeedPledges(id);
   const resolve = useResolvePledge();
   const setStatus = useSetNeedStatus();
+  // Read the clock once when the screen opens, not on every render.
+  const [now] = useState(() => Date.now());
 
   if (need.isPending) return <Loading />;
   if (!need.data) {
@@ -32,7 +35,9 @@ export default function StaffNeedScreen() {
   }
 
   const { data } = need;
-  const status = NEED_STATUS[data.status];
+  // Same wording as the organization tab: an open need whose window has passed is "ended".
+  const ended = data.status === 'open' && new Date(data.dropoff_ends_at).getTime() <= now;
+  const status = ended ? { label: 'ended', tone: 'neutral' as const } : NEED_STATUS[data.status];
   const all = pledges.data ?? [];
   const received = all.filter((p) => p.status === 'received').reduce((sum, p) => sum + p.quantity, 0);
   const expected = all.filter((p) => p.status === 'pledged');
@@ -83,6 +88,14 @@ export default function StaffNeedScreen() {
             />
           )}
         </View>
+        {/* Its own full-width row: three buttons squeezed the label onto two lines on phones.
+            Once a need is over, posting it again is the likely next step, so it's the main action. */}
+        <Button
+          variant={ended || data.status !== 'open' ? 'primary' : 'secondary'}
+          label="post again"
+          style={styles.fullWidth}
+          onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: data.id } })}
+        />
       </Card>
 
       {mutationError ? <ErrorText>{errorMessage(mutationError)}</ErrorText> : null}
@@ -172,6 +185,7 @@ const styles = StyleSheet.create({
   sectionTitle: { marginTop: Spacing.two },
   actions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two },
   action: { flex: 1 },
+  fullWidth: { marginTop: Spacing.two },
   correction: { marginTop: Spacing.two, alignSelf: 'flex-start', minHeight: 36 },
   rowHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: Spacing.two },
 });
