@@ -76,12 +76,6 @@ export default function StaffNeedScreen() {
             style={styles.action}
             onPress={() => router.push({ pathname: '/organization/need-form', params: { needId: data.id } })}
           />
-          <Button
-            variant="secondary"
-            label="post again"
-            style={styles.action}
-            onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: data.id } })}
-          />
           {data.status === 'open' ? (
             <Button variant="danger" label="close" style={styles.action} onPress={close} loading={setStatus.isPending} />
           ) : (
@@ -94,6 +88,14 @@ export default function StaffNeedScreen() {
             />
           )}
         </View>
+        {/* Its own full-width row: three buttons squeezed the label onto two lines on phones.
+            Once a need is over, posting it again is the likely next step, so it's the main action. */}
+        <Button
+          variant={ended || data.status !== 'open' ? 'primary' : 'secondary'}
+          label="post again"
+          style={styles.fullWidth}
+          onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: data.id } })}
+        />
       </Card>
 
       {mutationError ? <ErrorText>{errorMessage(mutationError)}</ErrorText> : null}
@@ -183,6 +185,7 @@ const styles = StyleSheet.create({
   sectionTitle: { marginTop: Spacing.two },
   actions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two },
   action: { flex: 1 },
+  fullWidth: { marginTop: Spacing.two },
   correction: { marginTop: Spacing.two, alignSelf: 'flex-start', minHeight: 36 },
   rowHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: Spacing.two },
 });
