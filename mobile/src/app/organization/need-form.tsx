@@ -131,8 +131,14 @@ function NeedForm({
           repeats_weekly: repeatsWeekly,
         },
       });
-      if (need) goBackOr({ pathname: '/organization/need/[id]', params: { id } });
-      else router.replace({ pathname: '/organization/need/[id]', params: { id } });
+      if (need) {
+        goBackOr({ pathname: '/organization/need/[id]', params: { id } });
+      } else {
+        // Posted: close the form (and the "what are you posting?" step) so
+        // back from the new need goes to the organization tab, not the form.
+        router.dismissTo('/organization');
+        router.push({ pathname: '/organization/need/[id]', params: { id } });
+      }
     } catch (e) {
       setError(errorMessage(e));
     }

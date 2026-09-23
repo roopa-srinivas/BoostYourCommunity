@@ -31,7 +31,8 @@ function distinctRecent(needs: Tables<'needs'>[]) {
 /**
  * "What are you posting?": choose something new or a past need before the
  * form, so nobody types into a form and then loses it by picking a past need.
- * Organizations without past needs go straight to the empty form.
+ * Back from the form returns here. Organizations without past needs go
+ * straight to the empty form.
  */
 export default function NewNeedScreen() {
   const { organizationId } = useLocalSearchParams<{ organizationId: string }>();
@@ -39,8 +40,11 @@ export default function NewNeedScreen() {
   const recent = distinctRecent(needs.data ?? []);
   const nothingToReuse = needs.isSuccess && recent.length === 0;
 
-  const startNew = () => router.replace({ pathname: '/organization/need-form', params: { organizationId } });
+  // Push, so backing out of the form returns here to choose again.
+  const startNew = () => router.push({ pathname: '/organization/need-form', params: { organizationId } });
 
+  // Nothing to choose from: go straight to the empty form (replace, so back
+  // doesn't land on an empty chooser).
   useEffect(() => {
     if (nothingToReuse) router.replace({ pathname: '/organization/need-form', params: { organizationId } });
   }, [nothingToReuse, organizationId]);
@@ -62,7 +66,7 @@ export default function NewNeedScreen() {
             key={need.id}
             style={styles.card}
             accessibilityLabel={`post ${lower(need.title)} again`}
-            onPress={() => router.replace({ pathname: '/organization/need-form', params: { copyFrom: need.id } })}>
+            onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: need.id } })}>
             <CategoryIcon category={need.category} size={36} />
             <View style={styles.flex}>
               <ThemedText type="bold" numberOfLines={1}>
