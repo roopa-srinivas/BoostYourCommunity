@@ -134,3 +134,15 @@ select pg_temp.ok('membership helpers are not exposed in the public API schema',
   not exists (
     select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and p.proname in ('is_org_member', 'is_org_owner')));
+
+-- Account deletion -------------------------------------------------------------
+reset role;
+insert into auth.users (id, email) values ('dddddddd-0000-4000-8000-000000000004', 'dee@example.com');
+select pg_temp.act_as('dddddddd-0000-4000-8000-000000000004');
+insert into public.pledges (need_id, quantity) select id, 7 from public.needs where title = 'Fresh fruit';
+reset role;
+select pg_temp.ok('pledge counts toward the need',
+  (select quantity_committed from public.needs where title = 'Fresh fruit') = 7);
+delete from auth.users where id = 'dddddddd-0000-4000-8000-000000000004';
+select pg_temp.ok('deleting the donor''s account gives their pledge back to the need',
+  (select quantity_committed from public.needs where title = 'Fresh fruit') = 0);

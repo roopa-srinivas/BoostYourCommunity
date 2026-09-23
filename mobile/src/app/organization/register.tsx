@@ -1,5 +1,4 @@
 import * as Location from 'expo-location';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -13,16 +12,17 @@ import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { errorMessage } from '@/lib/format';
+import { geocode } from '@/lib/geocode';
+import { goBackOr } from '@/lib/navigation';
 import { ORGANIZATION_KINDS, type OrganizationKind } from '@/lib/labels';
 
-/** Finds coordinates for an address. Geocoding isn't available on every platform. */
-async function geocode(address: string): Promise<Coordinates | null> {
-  try {
-    const [result] = await Location.geocodeAsync(address);
-    return result ? { latitude: result.latitude, longitude: result.longitude } : null;
-  } catch {
-    return null;
-  }
+const LOCATION_TIMEOUT_MS = 10_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string) {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ]);
 }
 
 export default function RegisterOrganizationScreen() {
@@ -41,9 +41,15 @@ export default function RegisterOrganizationScreen() {
     setError(null);
     setLocating(true);
     try {
-      const { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') throw new Error('Allow location access to use your current location.');
-      const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      const position = await withTimeout(
+        (async () => {
+          const { status } = await Location.requestForegroundPermissionsAsync();
+          if (status !== 'granted') throw new Error('Allow location access to use your current location.');
+          return Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+        })(),
+        LOCATION_TIMEOUT_MS,
+        'We couldn’t get your location. Check that location access is allowed, or enter the address instead.',
+      );
       setHere({ latitude: position.coords.latitude, longitude: position.coords.longitude });
     } catch (e) {
       setError(errorMessage(e));
@@ -75,7 +81,7 @@ export default function RegisterOrganizationScreen() {
         website: website.trim() || null,
         location,
       });
-      router.back();
+      goBackOr('/organization');
     } catch (e) {
       setError(errorMessage(e));
     }

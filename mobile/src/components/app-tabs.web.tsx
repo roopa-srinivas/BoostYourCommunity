@@ -1,5 +1,11 @@
-import { TabList, TabSlot, TabTrigger, Tabs, type TabTriggerSlotProps } from 'expo-router/ui';
-import { Pressable, StyleSheet, View } from 'react-native';
+import {
+  TabList,
+  TabSlot,
+  TabTrigger,
+  Tabs,
+  type TabTriggerSlotProps,
+} from 'expo-router/ui';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from './themed-text';
 import { ThemedView } from './themed-view';
@@ -12,24 +18,24 @@ export default function AppTabs() {
   return (
     <Tabs style={styles.tabs}>
       <TabSlot style={styles.slot} />
-      <TabList asChild>
-        <View style={[styles.tabList, { borderTopColor: theme.border, backgroundColor: theme.background }]}>
-          <ThemedText type="smallBold" style={styles.brand}>
-            Boost Your Community
-          </ThemedText>
-          <TabTrigger name="give" href="/" asChild>
-            <TabButton>Give</TabButton>
-          </TabTrigger>
-          <TabTrigger name="pledges" href="/pledges" asChild>
-            <TabButton>My pledges</TabButton>
-          </TabTrigger>
-          <TabTrigger name="organization" href="/organization" asChild>
-            <TabButton>Organization</TabButton>
-          </TabTrigger>
-          <TabTrigger name="profile" href="/profile" asChild>
-            <TabButton>Profile</TabButton>
-          </TabTrigger>
-        </View>
+      {/* Not `asChild`: in this expo-router version TabList hands an asChild
+          child a style array, which the slot rejects. */}
+      <TabList style={[styles.tabList, { borderTopColor: theme.border, backgroundColor: theme.background }]}>
+        <ThemedText type="smallBold" style={styles.brand}>
+          Boost Your Community
+        </ThemedText>
+        <TabTrigger name="give" href="/" asChild>
+          <TabButton>Give</TabButton>
+        </TabTrigger>
+        <TabTrigger name="pledges" href="/pledges" asChild>
+          <TabButton>My pledges</TabButton>
+        </TabTrigger>
+        <TabTrigger name="organization" href="/organization" asChild>
+          <TabButton>Organization</TabButton>
+        </TabTrigger>
+        <TabTrigger name="profile" href="/profile" asChild>
+          <TabButton>Profile</TabButton>
+        </TabTrigger>
       </TabList>
     </Tabs>
   );

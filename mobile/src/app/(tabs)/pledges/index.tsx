@@ -11,7 +11,7 @@ import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { confirm } from '@/lib/confirm';
 import { openDirections } from '@/lib/directions';
-import { errorMessage, formatWindow } from '@/lib/format';
+import { errorMessage, formatQuantity, formatWindow } from '@/lib/format';
 import { PLEDGE_STATUS } from '@/lib/labels';
 
 export default function MyPledgesScreen() {
@@ -26,7 +26,7 @@ export default function MyPledgesScreen() {
   async function cancel(pledge: MyPledge) {
     const ok = await confirm(
       'Cancel this pledge?',
-      `The organization will stop expecting your ${pledge.quantity} ${pledge.need?.unit ?? 'items'}.`,
+      `The organization will stop expecting your ${formatQuantity(pledge.quantity, pledge.need?.unit ?? 'items')}.`,
       'Cancel pledge',
     );
     if (ok) cancelPledge.mutate(pledge.id);
@@ -88,7 +88,7 @@ function PledgeCard({ pledge, children }: { pledge: MyPledge; children?: React.R
     <Card>
       <Badge label={status.label} tone={status.tone} />
       <ThemedText type="smallBold" style={styles.title}>
-        {pledge.quantity} {need?.unit} · {need?.title}
+        {formatQuantity(pledge.quantity, need?.unit ?? 'items')} · {need?.title}
       </ThemedText>
       {need?.organization ? (
         <ThemedText type="small" themeColor="textSecondary">

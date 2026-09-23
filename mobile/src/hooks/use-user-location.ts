@@ -11,25 +11,38 @@ type UserLocation =
   | { status: 'found'; location: Coordinates }
   | { status: 'unavailable'; location: null };
 
+// Give up if the permission prompt goes unanswered or the position takes too
+// long, so the app falls back instead of spinning forever.
+const LOCATION_TIMEOUT_MS = 10_000;
+
 /** Asks for location permission once and reports the device's position. */
 export function useUserLocation(): UserLocation {
   const [state, setState] = useState<UserLocation>({ status: 'locating', location: null });
 
   useEffect(() => {
-    let cancelled = false;
+    let settled = false;
+    const settle = (next: UserLocation) => {
+      if (settled) return;
+      settled = true;
+      setState(next);
+    };
+    const timeout = setTimeout(() => settle({ status: 'unavailable', location: null }), LOCATION_TIMEOUT_MS);
+
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status !== 'granted') throw new Error('Location permission denied');
         const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
         const { latitude, longitude } = position.coords;
-        if (!cancelled) setState({ status: 'found', location: { latitude, longitude } });
+        settle({ status: 'found', location: { latitude, longitude } });
       } catch {
-        if (!cancelled) setState({ status: 'unavailable', location: null });
+        settle({ status: 'unavailable', location: null });
       }
     })();
+
     return () => {
-      cancelled = true;
+      settled = true;
+      clearTimeout(timeout);
     };
   }, []);
 

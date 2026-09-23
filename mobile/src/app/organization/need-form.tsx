@@ -13,6 +13,7 @@ import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import type { Tables } from '@/lib/database.types';
 import { errorMessage } from '@/lib/format';
+import { goBackOr } from '@/lib/navigation';
 import { CATEGORIES, type NeedCategory } from '@/lib/labels';
 
 /** Post a new need (`organizationId` param) or edit one (`needId` param). */
@@ -82,7 +83,7 @@ function NeedForm({ organizationId, need }: { organizationId: string; need?: Tab
           dropoff_ends_at: endsAt.toISOString(),
         },
       });
-      if (need) router.back();
+      if (need) goBackOr({ pathname: '/organization/need/[id]', params: { id } });
       else router.replace({ pathname: '/organization/need/[id]', params: { id } });
     } catch (e) {
       setError(errorMessage(e));

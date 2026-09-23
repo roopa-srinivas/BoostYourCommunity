@@ -13,7 +13,7 @@ import { Screen } from '@/components/ui/screen';
 import { Stepper } from '@/components/ui/stepper';
 import { Spacing } from '@/constants/theme';
 import { openDirections } from '@/lib/directions';
-import { errorMessage, formatWindow } from '@/lib/format';
+import { errorMessage, formatQuantity, formatWindow } from '@/lib/format';
 import { categoryLabel } from '@/lib/labels';
 
 export default function NeedScreen() {
@@ -90,19 +90,23 @@ export default function NeedScreen() {
       {pledged !== null ? (
         <Card>
           <ThemedText type="smallBold">
-            Thank you! You pledged {pledged} {data.unit}.
+            Thank you! You pledged {formatQuantity(pledged, data.unit)}.
           </ThemedText>
           <ThemedText type="small">
             Please drop them off at {organization?.name} {window}. The staff will confirm when they arrive.
           </ThemedText>
-          <Button label="See my pledges" onPress={() => router.navigate('/pledges')} style={styles.cardButton} />
+          <Button label="See my pledges" onPress={() => router.dismissTo('/pledges')} style={styles.cardButton} />
         </Card>
       ) : acceptingPledges ? (
         <View style={styles.section}>
           <ThemedText type="smallBold">How many can you bring?</ThemedText>
           <Stepper value={pledgeQuantity} max={remaining} onChange={setQuantity} suffix={data.unit} />
           {createPledge.error ? <ErrorText>{errorMessage(createPledge.error)}</ErrorText> : null}
-          <Button label={`Pledge ${pledgeQuantity} ${data.unit}`} onPress={pledge} loading={createPledge.isPending} />
+          <Button
+            label={`Pledge ${formatQuantity(pledgeQuantity, data.unit)}`}
+            onPress={pledge}
+            loading={createPledge.isPending}
+          />
         </View>
       ) : (
         <Card>

@@ -13,7 +13,7 @@ type ButtonProps = Omit<PressableProps, 'children'> & {
 export function Button({ label, variant = 'primary', loading, disabled, style, ...rest }: ButtonProps) {
   const theme = useTheme();
   const isDisabled = disabled || loading;
-  const background = { primary: theme.tint, secondary: theme.backgroundElement, danger: theme.dangerSoft }[variant];
+  const background = { primary: theme.tint, secondary: theme.backgroundSelected, danger: theme.dangerSoft }[variant];
   const foreground = { primary: theme.onTint, secondary: theme.text, danger: theme.danger }[variant];
 
   return (

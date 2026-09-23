@@ -1,5 +1,18 @@
 const METERS_PER_MILE = 1609.344;
 
+/**
+ * "1 bottle", "3 bottles". Units are typed by organizations in the plural, so
+ * for one item we drop a trailing "s"/"es" ("pairs" -> "pair",
+ * "toothbrushes" -> "toothbrush").
+ */
+export function formatQuantity(quantity: number, unit: string) {
+  if (quantity !== 1) return `${quantity} ${unit}`;
+  let singular = unit;
+  if (/(sh|ch|x|ss)es$/i.test(unit)) singular = unit.slice(0, -2);
+  else if (/[^s]s$/i.test(unit)) singular = unit.slice(0, -1);
+  return `${quantity} ${singular}`;
+}
+
 export function formatDistance(meters: number) {
   const miles = meters / METERS_PER_MILE;
   return miles < 0.1 ? 'nearby' : `${miles.toFixed(1)} mi`;

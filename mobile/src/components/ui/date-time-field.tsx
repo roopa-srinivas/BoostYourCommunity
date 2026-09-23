@@ -45,7 +45,12 @@ export function DateTimeField({ label, value, onChange }: DateTimeFieldProps) {
 
   return (
     <View style={styles.field}>
-      <ThemedText type="smallBold">{label}</ThemedText>
+      <ThemedText type="smallBold">
+        {label}:{' '}
+        <ThemedText type="small" themeColor="tint">
+          {formatDay(value)} at {formatTime(value)}
+        </ThemedText>
+      </ThemedText>
       <ChipGroup
         scroll
         options={days.map((day) => ({ value: dayKey(day), label: formatDay(day) }))}

@@ -41,6 +41,9 @@ export default function GiveScreen() {
       <ThemedText type="small" themeColor="textSecondary">
         {locationNote}
       </ThemedText>
+      {userLocation.status === 'locating' && !showSanFrancisco ? (
+        <Button variant="secondary" label="See San Francisco instead" onPress={() => setShowSanFrancisco(true)} />
+      ) : null}
 
       <ChipGroup
         scroll
