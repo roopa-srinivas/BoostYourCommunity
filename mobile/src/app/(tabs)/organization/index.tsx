@@ -29,12 +29,12 @@ export default function OrganizationScreen() {
     return (
       <Screen refreshing={memberships.isRefetching} onRefresh={memberships.refetch}>
         {memberships.error ? <ErrorText>{errorMessage(memberships.error)}</ErrorText> : null}
-        <ThemedText type="smallBold">Do you work or volunteer at a shelter, pantry or community fridge?</ThemedText>
+        <ThemedText type="sectionTitle">do you work or volunteer at a shelter, pantry or community fridge?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Register your organization to post what you need and confirm drop-offs. We review every organization
+          register your organization to post what you need and confirm drop-offs. we review every organization
           before it appears to donors.
         </ThemedText>
-        <Button label="Register an organization" onPress={() => router.push('/organization/register')} />
+        <Button label="register an organization" onPress={() => router.push('/organization/register')} />
       </Screen>
     );
   }
@@ -56,7 +56,7 @@ export default function OrganizationScreen() {
           ) : null}
           <Card>
             <Badge label={status.label} tone={status.tone} />
-            <ThemedText type="smallBold" style={styles.orgName}>
+            <ThemedText type="sectionTitle" style={styles.orgName}>
               {organization.name}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
@@ -64,19 +64,19 @@ export default function OrganizationScreen() {
             </ThemedText>
             {organization.status === 'pending' ? (
               <ThemedText type="small" style={styles.note}>
-                We’re reviewing your organization. Once it’s approved you can post needs and donors nearby will see
+                we’re reviewing your organization. once it’s approved you can post needs and donors nearby will see
                 them.
               </ThemedText>
             ) : null}
             {organization.status === 'suspended' ? (
               <ThemedText type="small" style={styles.note}>
-                This organization is suspended, so its needs are hidden from donors.
+                this organization is suspended, so its needs are hidden from donors.
               </ThemedText>
             ) : null}
           </Card>
           {organization.status === 'approved' ? (
             <Button
-              label="Post a need"
+              label="post a need"
               onPress={() =>
                 router.push({ pathname: '/organization/need-form', params: { organizationId: organization.id } })
               }
@@ -103,18 +103,18 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
         <Loading />
       ) : (
         <>
-          <ThemedText type="smallBold" style={styles.sectionTitle}>
-            Open needs
+          <ThemedText type="sectionTitle" style={styles.sectionTitle}>
+            open needs
           </ThemedText>
           {active.length === 0 ? (
-            <EmptyState title="No open needs" body="Post a need so donors nearby know what to bring." />
+            <EmptyState title="no open needs" body="post a need so donors nearby know what to bring." />
           ) : (
             active.map((need) => <StaffNeedCard key={need.id} need={need} />)
           )}
           {past.length > 0 ? (
             <>
-              <ThemedText type="smallBold" style={styles.sectionTitle}>
-                Past needs
+              <ThemedText type="sectionTitle" style={styles.sectionTitle}>
+                past needs
               </ThemedText>
               {past.map((need) => (
                 <StaffNeedCard key={need.id} need={need} />
@@ -129,25 +129,25 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
 
 function StaffNeedCard({ need }: { need: Tables<'needs'> }) {
   const ended = need.status === 'open' && new Date(need.dropoff_ends_at) <= new Date();
-  const status = ended ? { label: 'Ended', tone: 'neutral' as const } : NEED_STATUS[need.status];
+  const status = ended ? { label: 'ended', tone: 'neutral' as const } : NEED_STATUS[need.status];
   return (
     <Card onPress={() => router.push({ pathname: '/organization/need/[id]', params: { id: need.id } })}>
       <Badge label={status.label} tone={status.tone} />
-      <ThemedText type="smallBold" style={styles.orgName}>
+      <ThemedText type="bold" style={styles.orgName}>
         {need.title}
       </ThemedText>
       <ThemedText type="small">
         {need.quantity_committed} of {need.quantity_needed} {need.unit} pledged
       </ThemedText>
       <ThemedText type="small" themeColor="textSecondary">
-        Drop off {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
+        drop off {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
       </ThemedText>
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  orgName: { marginTop: Spacing.one, fontSize: 17 },
+  orgName: { marginTop: Spacing.one },
   note: { marginTop: Spacing.two },
   sectionTitle: { marginTop: Spacing.two },
 });

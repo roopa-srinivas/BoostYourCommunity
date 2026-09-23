@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import MapView, { Marker } from 'react-native-maps';
 
 import type { Coordinates, NearbyNeed } from '@/api/needs';
-import { Spacing } from '@/constants/theme';
+import { ThemedText } from '@/components/themed-text';
+import { FontFamily, Radius } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type NeedsMapProps = {
@@ -51,14 +52,33 @@ export function NeedsMap({ center, needs, selectedOrganizationId, onSelectOrgani
           coordinate={{ latitude: organization.latitude, longitude: organization.longitude }}
           title={organization.name}
           description={`${organization.count} open ${organization.count === 1 ? 'need' : 'needs'}`}
-          pinColor={organization.id === selectedOrganizationId ? theme.tint : undefined}
-          onPress={() => onSelectOrganization(organization.id)}
-        />
+          onPress={() => onSelectOrganization(organization.id)}>
+          {/* Terracotta pin with the number of open needs; green when selected. */}
+          <View
+            style={[
+              styles.pin,
+              {
+                backgroundColor: organization.id === selectedOrganizationId ? theme.tint : theme.accent,
+                borderColor: theme.backgroundElement,
+              },
+            ]}>
+            <ThemedText style={[styles.pinLabel, { color: theme.onAccent }]}>{organization.count}</ThemedText>
+          </View>
+        </Marker>
       ))}
     </MapView>
   );
 }
 
 const styles = StyleSheet.create({
-  map: { height: 280, borderRadius: Spacing.three, overflow: 'hidden' },
+  map: { height: 240, borderRadius: Radius.card, overflow: 'hidden' },
+  pin: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pinLabel: { fontFamily: FontFamily.bold, fontSize: 14, lineHeight: 18 },
 });

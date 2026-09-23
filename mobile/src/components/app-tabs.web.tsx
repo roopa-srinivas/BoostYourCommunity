@@ -21,20 +21,20 @@ export default function AppTabs() {
       {/* Not `asChild`: in this expo-router version TabList hands an asChild
           child a style array, which the slot rejects. */}
       <TabList style={[styles.tabList, { borderTopColor: theme.border, backgroundColor: theme.background }]}>
-        <ThemedText type="smallBold" style={styles.brand}>
-          Boost Your Community
+        <ThemedText type="sectionTitle" style={styles.brand}>
+          boost your community
         </ThemedText>
         <TabTrigger name="give" href="/" asChild>
-          <TabButton>Give</TabButton>
+          <TabButton>give</TabButton>
         </TabTrigger>
         <TabTrigger name="pledges" href="/pledges" asChild>
-          <TabButton>My pledges</TabButton>
+          <TabButton>my pledges</TabButton>
         </TabTrigger>
         <TabTrigger name="organization" href="/organization" asChild>
-          <TabButton>Organization</TabButton>
+          <TabButton>organization</TabButton>
         </TabTrigger>
         <TabTrigger name="profile" href="/profile" asChild>
-          <TabButton>Profile</TabButton>
+          <TabButton>profile</TabButton>
         </TabTrigger>
       </TabList>
     </Tabs>

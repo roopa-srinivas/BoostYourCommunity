@@ -25,7 +25,7 @@ export default function NeedFormScreen() {
   if (needId && !existing.data) {
     return (
       <Screen>
-        <ErrorText>{existing.error ? errorMessage(existing.error) : 'This need could not be found.'}</ErrorText>
+        <ErrorText>{existing.error ? errorMessage(existing.error) : 'this need could not be found.'}</ErrorText>
       </Screen>
     );
   }
@@ -34,7 +34,7 @@ export default function NeedFormScreen() {
   if (!orgId) {
     return (
       <Screen>
-        <ErrorText>Missing organization.</ErrorText>
+        <ErrorText>missing organization.</ErrorText>
       </Screen>
     );
   }
@@ -63,11 +63,11 @@ function NeedForm({ organizationId, need }: { organizationId: string; need?: Tab
   async function submit() {
     setError(null);
     const quantityNeeded = Number(quantity);
-    if (title.trim().length < 3) return setError('Give the need a short title, like “New socks, adult sizes”.');
-    if (!Number.isInteger(quantityNeeded) || quantityNeeded < 1) return setError('Enter how many you need.');
-    if (!unit.trim()) return setError('Enter a unit, like “pairs” or “cans”.');
-    if (endsAt <= startsAt) return setError('The drop-off window has to end after it starts.');
-    if (endsAt <= new Date()) return setError('The drop-off window has to end in the future.');
+    if (title.trim().length < 3) return setError('give the need a short title, like “new socks, adult sizes”.');
+    if (!Number.isInteger(quantityNeeded) || quantityNeeded < 1) return setError('enter how many you need.');
+    if (!unit.trim()) return setError('enter a unit, like “pairs” or “cans”.');
+    if (endsAt <= startsAt) return setError('the drop-off window has to end after it starts.');
+    if (endsAt <= new Date()) return setError('the drop-off window has to end in the future.');
 
     try {
       const id = await save.mutateAsync({
@@ -92,37 +92,37 @@ function NeedForm({ organizationId, need }: { organizationId: string; need?: Tab
 
   return (
     <Screen>
-      <Stack.Screen options={{ title: need ? 'Edit need' : 'Post a need' }} />
+      <Stack.Screen options={{ title: need ? 'edit need' : 'post a need' }} />
 
       <View style={styles.field}>
-        <ThemedText type="smallBold">Category</ThemedText>
+        <ThemedText type="smallBold">category</ThemedText>
         <ChipGroup options={CATEGORIES} value={category} onChange={setCategory} />
       </View>
       <TextField
-        label="What do you need?"
+        label="what do you need?"
         value={title}
         onChangeText={setTitle}
-        placeholder="New socks, adult sizes"
-        hint="Be specific so donors bring the right thing."
+        placeholder="new socks, adult sizes"
+        hint="be specific so donors bring the right thing."
       />
       <TextField
-        label="Details (optional)"
+        label="details (optional)"
         value={details}
         onChangeText={setDetails}
         multiline
-        placeholder="Sizes, brands, what you can't accept…"
+        placeholder="sizes, brands, what you can't accept…"
       />
       <View style={styles.row}>
         <View style={styles.rowItem}>
-          <TextField label="How many?" value={quantity} onChangeText={setQuantity} keyboardType="number-pad" />
+          <TextField label="how many?" value={quantity} onChangeText={setQuantity} keyboardType="number-pad" />
         </View>
         <View style={styles.rowItem}>
-          <TextField label="Unit" value={unit} onChangeText={setUnit} placeholder="pairs, cans, items" />
+          <TextField label="unit" value={unit} onChangeText={setUnit} placeholder="pairs, cans, items" />
         </View>
       </View>
 
       <DateTimeField
-        label="Drop-off starts"
+        label="drop-off starts"
         value={startsAt}
         onChange={(next) => {
           setStartsAt(next);
@@ -130,10 +130,10 @@ function NeedForm({ organizationId, need }: { organizationId: string; need?: Tab
           if (next >= endsAt) setEndsAt(new Date(next.getTime() + (endsAt.getTime() - startsAt.getTime())));
         }}
       />
-      <DateTimeField label="Drop-off ends" value={endsAt} onChange={setEndsAt} />
+      <DateTimeField label="drop-off ends" value={endsAt} onChange={setEndsAt} />
 
       {error ? <ErrorText>{error}</ErrorText> : null}
-      <Button label={need ? 'Save changes' : 'Post need'} onPress={submit} loading={save.isPending} />
+      <Button label={need ? 'save changes' : 'post need'} onPress={submit} loading={save.isPending} />
     </Screen>
   );
 }

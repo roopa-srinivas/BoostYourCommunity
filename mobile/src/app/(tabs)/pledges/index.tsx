@@ -25,9 +25,9 @@ export default function MyPledgesScreen() {
 
   async function cancel(pledge: MyPledge) {
     const ok = await confirm(
-      'Cancel this pledge?',
-      `The organization will stop expecting your ${formatQuantity(pledge.quantity, pledge.need?.unit ?? 'items')}.`,
-      'Cancel pledge',
+      'cancel this pledge?',
+      `the organization will stop expecting your ${formatQuantity(pledge.quantity, pledge.need?.unit ?? 'items')}.`,
+      'cancel pledge',
     );
     if (ok) cancelPledge.mutate(pledge.id);
   }
@@ -37,11 +37,11 @@ export default function MyPledgesScreen() {
       {pledges.error ? <ErrorText>{errorMessage(pledges.error)}</ErrorText> : null}
       {cancelPledge.error ? <ErrorText>{errorMessage(cancelPledge.error)}</ErrorText> : null}
 
-      <ThemedText type="smallBold">Upcoming drop-offs</ThemedText>
+      <ThemedText type="sectionTitle">upcoming drop-offs</ThemedText>
       {upcoming.length === 0 ? (
         <>
-          <EmptyState title="Nothing to drop off" body="Find a need nearby and pledge what you can bring." />
-          <Button variant="secondary" label="Find needs nearby" onPress={() => router.navigate('/')} />
+          <EmptyState title="nothing to drop off" body="find a need nearby and pledge what you can bring." />
+          <Button variant="secondary" label="find needs nearby" onPress={() => router.navigate('/')} />
         </>
       ) : (
         upcoming.map((pledge) => (
@@ -50,14 +50,14 @@ export default function MyPledgesScreen() {
               {pledge.need?.organization ? (
                 <Button
                   variant="secondary"
-                  label="Directions"
+                  label="directions"
                   style={styles.action}
                   onPress={() => openDirections(pledge.need!.organization!.address)}
                 />
               ) : null}
               <Button
                 variant="danger"
-                label="Cancel"
+                label="cancel"
                 style={styles.action}
                 loading={cancelPledge.isPending && cancelPledge.variables === pledge.id}
                 onPress={() => cancel(pledge)}
@@ -69,8 +69,8 @@ export default function MyPledgesScreen() {
 
       {past.length > 0 ? (
         <>
-          <ThemedText type="smallBold" style={styles.sectionTitle}>
-            Past pledges
+          <ThemedText type="sectionTitle" style={styles.sectionTitle}>
+            past pledges
           </ThemedText>
           {past.map((pledge) => (
             <PledgeCard key={pledge.id} pledge={pledge} />
@@ -87,7 +87,7 @@ function PledgeCard({ pledge, children }: { pledge: MyPledge; children?: React.R
   return (
     <Card>
       <Badge label={status.label} tone={status.tone} />
-      <ThemedText type="smallBold" style={styles.title}>
+      <ThemedText type="bold" style={styles.title}>
         {formatQuantity(pledge.quantity, need?.unit ?? 'items')} · {need?.title}
       </ThemedText>
       {need?.organization ? (
@@ -97,7 +97,7 @@ function PledgeCard({ pledge, children }: { pledge: MyPledge; children?: React.R
       ) : null}
       {need ? (
         <ThemedText type="small" themeColor="textSecondary">
-          Drop off {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
+          drop off {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
         </ThemedText>
       ) : null}
       {children}

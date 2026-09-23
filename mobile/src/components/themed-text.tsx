@@ -1,10 +1,10 @@
-import { Platform, StyleSheet, Text, type TextProps } from 'react-native';
+import { StyleSheet, Text, type TextProps } from 'react-native';
 
-import { Fonts, ThemeColor } from '@/constants/theme';
+import { FontFamily, Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
-  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
+  type?: 'default' | 'bold' | 'title' | 'subtitle' | 'sectionTitle' | 'small' | 'smallBold' | 'link' | 'code';
   themeColor?: ThemeColor;
 };
 
@@ -14,15 +14,8 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   return (
     <Text
       style={[
-        { color: theme[themeColor ?? 'text'] },
-        type === 'default' && styles.default,
-        type === 'title' && styles.title,
-        type === 'small' && styles.small,
-        type === 'smallBold' && styles.smallBold,
-        type === 'subtitle' && styles.subtitle,
-        type === 'link' && styles.link,
-        type === 'linkPrimary' && styles.linkPrimary,
-        type === 'code' && styles.code,
+        { color: theme[themeColor ?? (type === 'link' ? 'tint' : 'text')] },
+        styles[type],
         style,
       ]}
       {...rest}
@@ -31,43 +24,16 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
 }
 
 const styles = StyleSheet.create({
-  small: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: 500,
-  },
-  smallBold: {
-    fontSize: 14,
-    lineHeight: 20,
-    fontWeight: 700,
-  },
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: 500,
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: 600,
-    lineHeight: 52,
-  },
-  subtitle: {
-    fontSize: 32,
-    lineHeight: 44,
-    fontWeight: 600,
-  },
-  link: {
-    lineHeight: 30,
-    fontSize: 14,
-  },
-  linkPrimary: {
-    lineHeight: 30,
-    fontSize: 14,
-    color: '#3c87f7',
-  },
-  code: {
-    fontFamily: Fonts.mono,
-    fontWeight: Platform.select({ android: 700 }) ?? 500,
-    fontSize: 12,
-  },
+  default: { fontFamily: FontFamily.regular, fontSize: 16, lineHeight: 23 },
+  bold: { fontFamily: FontFamily.bold, fontSize: 17, lineHeight: 23 },
+  small: { fontFamily: FontFamily.regular, fontSize: 14, lineHeight: 20 },
+  smallBold: { fontFamily: FontFamily.bold, fontSize: 14, lineHeight: 20 },
+  /** Big serif headline, e.g. the Give screen's opening line. */
+  title: { fontFamily: FontFamily.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.3 },
+  /** Serif heading for a screen's main subject, e.g. a need's title. */
+  subtitle: { fontFamily: FontFamily.display, fontSize: 24, lineHeight: 30, letterSpacing: -0.2 },
+  /** Serif label above a group of items, e.g. "needs near you". */
+  sectionTitle: { fontFamily: FontFamily.display, fontSize: 19, lineHeight: 25 },
+  link: { fontFamily: FontFamily.medium, fontSize: 14, lineHeight: 20 },
+  code: { fontFamily: Fonts.mono, fontSize: 12 },
 });

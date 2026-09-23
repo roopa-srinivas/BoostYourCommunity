@@ -33,16 +33,16 @@ export default function SignInScreen() {
 
     const trimmedEmail = email.trim();
     if (!trimmedEmail || !password) {
-      setError('Enter your email and password.');
+      setError('enter your email and password.');
       return;
     }
     if (mode === 'sign-up') {
       if (!displayName.trim()) {
-        setError('Enter the name other people will see.');
+        setError('enter the name other people will see.');
         return;
       }
       if (password.length < MIN_PASSWORD_LENGTH) {
-        setError(`Use a password with at least ${MIN_PASSWORD_LENGTH} characters.`);
+        setError(`use a password with at least ${MIN_PASSWORD_LENGTH} characters.`);
         return;
       }
     }
@@ -62,7 +62,7 @@ export default function SignInScreen() {
         // With email confirmation turned on, there's no session until the
         // person clicks the link in their email.
         if (!data.session) {
-          setNotice('Check your email to confirm your account, then sign in.');
+          setNotice('check your email to confirm your account, then sign in.');
           setMode('sign-in');
         }
       }
@@ -78,15 +78,15 @@ export default function SignInScreen() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <Screen contentContainerStyle={styles.content}>
-          <ThemedText type="subtitle">Boost Your Community</ThemedText>
+          <ThemedText type="title">boost your community</ThemedText>
           <ThemedText themeColor="textSecondary">
-            Give what local shelters and pantries actually need, when they need it.
+            give what local shelters and pantries actually need, when they need it.
           </ThemedText>
 
           <ChipGroup
             options={[
-              { value: 'sign-in', label: 'Sign in' },
-              { value: 'sign-up', label: 'Create account' },
+              { value: 'sign-in', label: 'sign in' },
+              { value: 'sign-up', label: 'create account' },
             ]}
             value={mode}
             onChange={(next) => {
@@ -97,16 +97,16 @@ export default function SignInScreen() {
 
           {mode === 'sign-up' ? (
             <TextField
-              label="Your name"
+              label="your name"
               value={displayName}
               onChangeText={setDisplayName}
-              placeholder="Shown on leaderboards and to organizations"
+              placeholder="shown on leaderboards and to organizations"
               autoComplete="name"
               textContentType="name"
             />
           ) : null}
           <TextField
-            label="Email"
+            label="email"
             value={email}
             onChangeText={setEmail}
             placeholder="you@example.com"
@@ -116,13 +116,13 @@ export default function SignInScreen() {
             textContentType="emailAddress"
           />
           <TextField
-            label="Password"
+            label="password"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
             autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
             textContentType={mode === 'sign-in' ? 'password' : 'newPassword'}
-            hint={mode === 'sign-up' ? `At least ${MIN_PASSWORD_LENGTH} characters.` : undefined}
+            hint={mode === 'sign-up' ? `at least ${MIN_PASSWORD_LENGTH} characters.` : undefined}
             onSubmitEditing={submit}
           />
 
@@ -130,7 +130,7 @@ export default function SignInScreen() {
           {notice ? <ThemedText type="small">{notice}</ThemedText> : null}
 
           <Button
-            label={mode === 'sign-in' ? 'Sign in' : 'Create account'}
+            label={mode === 'sign-in' ? 'sign in' : 'create account'}
             onPress={submit}
             loading={submitting}
           />

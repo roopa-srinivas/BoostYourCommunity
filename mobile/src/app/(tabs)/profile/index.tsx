@@ -45,12 +45,12 @@ export default function ProfileScreen() {
 
       {editing ? (
         <View style={styles.section}>
-          <TextField label="Your name" value={name} onChangeText={setName} autoFocus maxLength={60} />
+          <TextField label="your name" value={name} onChangeText={setName} autoFocus maxLength={60} />
           {updateName.error ? <ErrorText>{errorMessage(updateName.error)}</ErrorText> : null}
           <View style={styles.row}>
-            <Button variant="secondary" label="Cancel" style={styles.flex} onPress={() => setEditing(false)} />
+            <Button variant="secondary" label="cancel" style={styles.flex} onPress={() => setEditing(false)} />
             <Button
-              label="Save"
+              label="save"
               style={styles.flex}
               disabled={!name.trim()}
               loading={updateName.isPending}
@@ -66,7 +66,7 @@ export default function ProfileScreen() {
           </ThemedText>
           <Button
             variant="secondary"
-            label="Change name"
+            label="change name"
             style={styles.start}
             onPress={() => {
               setName(profile.data?.display_name ?? '');
@@ -82,7 +82,7 @@ export default function ProfileScreen() {
         <Stat value={upcoming} label="upcoming" />
       </View>
 
-      <Button variant="secondary" label="Sign out" onPress={() => supabase.auth.signOut()} />
+      <Button variant="secondary" label="sign out" onPress={() => supabase.auth.signOut()} />
     </Screen>
   );
 }

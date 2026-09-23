@@ -8,18 +8,18 @@ export type OrganizationKind = Enums<'organization_kind'>;
 export type OrganizationStatus = Enums<'organization_status'>;
 
 export const CATEGORIES: readonly { value: NeedCategory; label: string }[] = [
-  { value: 'food', label: 'Food' },
-  { value: 'water', label: 'Water' },
-  { value: 'clothing', label: 'Clothing' },
-  { value: 'hygiene', label: 'Hygiene' },
-  { value: 'other', label: 'Other' },
+  { value: 'food', label: 'food' },
+  { value: 'water', label: 'water' },
+  { value: 'clothing', label: 'clothing' },
+  { value: 'hygiene', label: 'hygiene' },
+  { value: 'other', label: 'other' },
 ];
 
 export const ORGANIZATION_KINDS: readonly { value: OrganizationKind; label: string }[] = [
-  { value: 'shelter', label: 'Shelter' },
-  { value: 'food_pantry', label: 'Food pantry' },
-  { value: 'community_fridge', label: 'Community fridge' },
-  { value: 'other', label: 'Other' },
+  { value: 'shelter', label: 'shelter' },
+  { value: 'food_pantry', label: 'food pantry' },
+  { value: 'community_fridge', label: 'community fridge' },
+  { value: 'other', label: 'other' },
 ];
 
 export function categoryLabel(category: NeedCategory) {
@@ -27,20 +27,20 @@ export function categoryLabel(category: NeedCategory) {
 }
 
 export const PLEDGE_STATUS: Record<PledgeStatus, { label: string; tone: BadgeTone }> = {
-  pledged: { label: 'Pledged', tone: 'info' },
-  received: { label: 'Received', tone: 'success' },
-  no_show: { label: 'Not dropped off', tone: 'warning' },
-  cancelled: { label: 'Cancelled', tone: 'neutral' },
+  pledged: { label: 'pledged', tone: 'info' },
+  received: { label: 'received', tone: 'success' },
+  no_show: { label: 'not dropped off', tone: 'warning' },
+  cancelled: { label: 'cancelled', tone: 'neutral' },
 };
 
 export const NEED_STATUS: Record<NeedStatus, { label: string; tone: BadgeTone }> = {
-  open: { label: 'Open', tone: 'info' },
-  closed: { label: 'Closed', tone: 'neutral' },
-  cancelled: { label: 'Cancelled', tone: 'neutral' },
+  open: { label: 'open', tone: 'info' },
+  closed: { label: 'closed', tone: 'neutral' },
+  cancelled: { label: 'cancelled', tone: 'neutral' },
 };
 
 export const ORGANIZATION_STATUS: Record<OrganizationStatus, { label: string; tone: BadgeTone }> = {
-  pending: { label: 'Waiting for approval', tone: 'warning' },
-  approved: { label: 'Approved', tone: 'success' },
-  suspended: { label: 'Suspended', tone: 'danger' },
+  pending: { label: 'waiting for approval', tone: 'warning' },
+  approved: { label: 'approved', tone: 'success' },
+  suspended: { label: 'suspended', tone: 'danger' },
 };

@@ -22,20 +22,25 @@ function startOfDay(date: Date) {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-/** "Today", "Tomorrow", or e.g. "Thu, Sep 24". */
+/** "today", "tomorrow", or e.g. "thu, sep 24". */
 export function formatDay(date: Date, now = new Date()) {
   const days = Math.round((startOfDay(date).getTime() - startOfDay(now).getTime()) / 86_400_000);
-  if (days === 0) return 'Today';
-  if (days === 1) return 'Tomorrow';
-  if (days === -1) return 'Yesterday';
-  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  if (days === 0) return 'today';
+  if (days === 1) return 'tomorrow';
+  if (days === -1) return 'yesterday';
+  return date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }).toLowerCase();
 }
 
+/** "6 pm" or "6:30 pm". */
 export function formatTime(date: Date) {
-  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const time = date.toLocaleTimeString('en-US', {
+    hour: 'numeric',
+    minute: date.getMinutes() === 0 ? undefined : '2-digit',
+  });
+  return time.toLowerCase();
 }
 
-/** "Today 4:00 PM – 7:00 PM" or "Today 4:00 PM – Thu, Sep 24 7:00 PM". */
+/** "today 4 pm – 7 pm" or "today 4 pm – thu, sep 24 7 pm". */
 export function formatWindow(startsAt: string, endsAt: string) {
   const start = new Date(startsAt);
   const end = new Date(endsAt);
@@ -46,11 +51,10 @@ export function formatWindow(startsAt: string, endsAt: string) {
     : `${startText} – ${formatDay(end)} ${formatTime(end)}`;
 }
 
-/** Turns a Supabase/Postgres error into a sentence we can show people. */
+/** Turns a Supabase/Postgres error into something we can show people. */
 export function errorMessage(error: unknown) {
   if (error && typeof error === 'object' && 'message' in error && typeof error.message === 'string') {
-    const message = error.message;
-    return message.charAt(0).toUpperCase() + message.slice(1);
+    return error.message.toLowerCase();
   }
-  return 'Something went wrong. Please try again.';
+  return 'something went wrong. please try again.';
 }

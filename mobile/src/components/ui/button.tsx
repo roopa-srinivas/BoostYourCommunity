@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, type PressableProps } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ButtonProps = Omit<PressableProps, 'children'> & {
@@ -30,9 +30,7 @@ export function Button({ label, variant = 'primary', loading, disabled, style, .
       {loading ? (
         <ActivityIndicator color={foreground} />
       ) : (
-        <ThemedText type="smallBold" style={{ color: foreground, fontSize: 16 }}>
-          {label}
-        </ThemedText>
+        <ThemedText style={[styles.label, { color: foreground }]}>{label}</ThemedText>
       )}
     </Pressable>
   );
@@ -40,10 +38,11 @@ export function Button({ label, variant = 'primary', loading, disabled, style, .
 
 const styles = StyleSheet.create({
   button: {
-    minHeight: 48,
+    minHeight: 50,
     paddingHorizontal: Spacing.four,
-    borderRadius: Spacing.three,
+    borderRadius: Radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  label: { fontFamily: FontFamily.bold, fontSize: 16, lineHeight: 22 },
 });
