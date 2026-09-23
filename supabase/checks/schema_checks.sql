@@ -382,11 +382,11 @@ select pg_temp.ok('owners cannot remove themselves (an organization always keeps
 -- Sam is owner (staff) at SoMa Harbor Shelter (org 2).
 select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
 -- Last week's Thursday bread pickup, 6–9 pm Pacific, set to repeat.
-insert into public.needs (organization_id, category, title, quantity_needed, unit, dropoff_starts_at, dropoff_ends_at, repeats_weekly)
+insert into public.needs (organization_id, category, title, quantity_needed, unit, dropoff_starts_at, dropoff_ends_at, repeat_frequency)
 values ('00000000-0000-4000-8000-000000000002', 'food', 'Bread pickup', 30, 'loaves',
         (date_trunc('day', now() at time zone 'America/Los_Angeles') - interval '6 days' + interval '18 hours') at time zone 'America/Los_Angeles',
         (date_trunc('day', now() at time zone 'America/Los_Angeles') - interval '6 days' + interval '21 hours') at time zone 'America/Los_Angeles',
-        true);
+        'weekly');
 reset role;
 select pg_temp.ok('a repeating need starts its own series',
   (select repeat_series = id from public.needs where title = 'Bread pickup'));
@@ -397,14 +397,14 @@ select pg_temp.ok('next week is exactly one week later, same local time',
       and bool_and(extract(hour from dropoff_starts_at at time zone 'America/Los_Angeles') = 18)
    from public.needs where title = 'Bread pickup'));
 select pg_temp.ok('the copy keeps the details and the series',
-  (select count(distinct repeat_series) = 1 and bool_and(quantity_needed = 30 and repeats_weekly)
+  (select count(distinct repeat_series) = 1 and bool_and(quantity_needed = 30 and repeat_frequency = 'weekly')
    from public.needs where title = 'Bread pickup'));
 select pg_temp.ok('running again posts nothing (next week is still to come)', public.post_next_repeating_needs() = 0);
 
 -- A winter series (standard time) carried into summer keeps 6 pm local, not 7 pm.
-insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeats_weekly)
+insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeat_frequency)
 values ('00000000-0000-4000-8000-000000000002', 'food', 'Winter soup', 10,
-        '2026-01-15 18:00-08', '2026-01-15 20:00-08', true);
+        '2026-01-15 18:00-08', '2026-01-15 20:00-08', 'weekly');
 select public.post_next_repeating_needs();
 select pg_temp.ok('weekly copies keep local time across daylight saving changes',
   (select extract(hour from max(dropoff_starts_at) at time zone 'America/Los_Angeles') = 18
@@ -412,34 +412,65 @@ select pg_temp.ok('weekly copies keep local time across daylight saving changes'
    from public.needs where title = 'Winter soup'));
 
 -- Cancelled needs don't repeat.
-insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeats_weekly, status)
-values ('00000000-0000-4000-8000-000000000002', 'food', 'Cancelled repeat', 5, now() - interval '3 days', now() - interval '2 days', true, 'cancelled');
+insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeat_frequency, status)
+values ('00000000-0000-4000-8000-000000000002', 'food', 'Cancelled repeat', 5, now() - interval '3 days', now() - interval '2 days', 'weekly', 'cancelled');
 select public.post_next_repeating_needs();
 select pg_temp.ok('cancelled needs do not repeat',
   (select count(*) from public.needs where title = 'Cancelled repeat') = 1);
 
 -- Three finished weeks in a row with no pledges stop the series.
-insert into public.needs (id, organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeats_weekly)
+insert into public.needs (id, organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeat_frequency)
 values ('44444444-0000-4000-8000-000000000001', '00000000-0000-4000-8000-000000000002', 'water', 'Ignored water', 5,
-        now() - interval '15 days', now() - interval '15 days' + interval '2 hours', true);
-insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeats_weekly, repeat_series)
+        now() - interval '15 days', now() - interval '15 days' + interval '2 hours', 'weekly');
+insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeat_frequency, repeat_series)
 select '00000000-0000-4000-8000-000000000002', 'water', 'Ignored water', 5, now() - interval '15 days' + (w || ' weeks')::interval,
-       now() - interval '15 days' + (w || ' weeks')::interval + interval '2 hours', true, '44444444-0000-4000-8000-000000000001'
+       now() - interval '15 days' + (w || ' weeks')::interval + interval '2 hours', 'weekly', '44444444-0000-4000-8000-000000000001'
 from generate_series(1, 2) w;
 select public.post_next_repeating_needs();
 select pg_temp.ok('three weeks in a row without pledges stop the series',
-  (select count(*) = 3 and bool_and(not repeats_weekly) from public.needs where title = 'Ignored water'));
+  (select count(*) = 3 and bool_and(repeat_frequency is null) from public.needs where title = 'Ignored water'));
 
 -- Stopping by hand.
 select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
 select pg_temp.rejects('non-members cannot stop a series',
   $$select public.stop_repeating((select id from public.needs where title = 'Bread pickup' order by dropoff_starts_at desc limit 1))$$);
-update public.needs set repeats_weekly = true where title = 'Fresh fruit';
+update public.needs set repeat_frequency = 'weekly' where title = 'Fresh fruit';
 reset role;
 select pg_temp.ok('non-members cannot turn repeating on',
-  (select not repeats_weekly from public.needs where title = 'Fresh fruit'));
+  (select repeat_frequency is null from public.needs where title = 'Fresh fruit'));
 select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
 select public.stop_repeating((select id from public.needs where title = 'Bread pickup' order by dropoff_starts_at desc limit 1));
 reset role;
 select pg_temp.ok('members can stop a series (every week of it)',
-  (select bool_and(not repeats_weekly) from public.needs where title = 'Bread pickup'));
+  (select bool_and(repeat_frequency is null) from public.needs where title = 'Bread pickup'));
+
+-- Repeat frequencies ------------------------------------------------------------------------------
+select pg_temp.ok('daily repeats the next day at the same time',
+  private.shift_occurrence('2026-09-23 17:00', 'daily', 1) = '2026-09-24 17:00');
+select pg_temp.ok('every 2 weeks repeats 14 days later',
+  private.shift_occurrence('2026-09-23 17:00', 'biweekly', 1) = '2026-10-07 17:00');
+select pg_temp.ok('monthly keeps the weekday position (2nd tuesday of september -> 2nd tuesday of october)',
+  private.shift_occurrence('2026-09-08 18:00', 'monthly', 1) = '2026-10-13 18:00');
+select pg_temp.ok('a 5th tuesday falls back to the next month''s last tuesday',
+  private.shift_occurrence('2026-09-29 18:00', 'monthly', 1) = '2026-10-27 18:00');
+select pg_temp.ok('monthly works across a year boundary (1st friday of december -> 1st friday of january)',
+  private.shift_occurrence('2026-12-04 10:00', 'monthly', 1) = '2027-01-01 10:00');
+select pg_temp.ok('monthly can skip ahead several months at once',
+  private.shift_occurrence('2026-01-12 09:30', 'monthly', 3) = '2026-04-13 09:30');
+
+-- The job uses each need's own frequency.
+insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeat_frequency)
+values ('00000000-0000-4000-8000-000000000002', 'water', 'Daily water', 10,
+        now() - interval '5 hours', now() - interval '3 hours', 'daily');
+select public.post_next_repeating_needs();
+select pg_temp.ok('a daily need is posted again a day later',
+  (select count(*) = 2 and max(dropoff_starts_at) - min(dropoff_starts_at) = interval '1 day'
+   from public.needs where title = 'Daily water'));
+-- Five quiet days in a row don't stop a daily need (the limit is a week).
+insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeat_frequency, repeat_series)
+select '00000000-0000-4000-8000-000000000002', 'water', 'Quiet daily', 5, now() - (d || ' days')::interval, now() - (d || ' days')::interval + interval '1 hour',
+       'daily', '55555555-0000-4000-8000-000000000001'
+from generate_series(1, 5) d;
+select public.post_next_repeating_needs();
+select pg_temp.ok('a few quiet days don''t stop a daily need',
+  (select count(*) = 6 from public.needs where title = 'Quiet daily'));

@@ -14,6 +14,7 @@ import type { Tables } from '@/lib/database.types';
 import { confirm } from '@/lib/confirm';
 import { errorMessage, formatDay, formatQuantity, formatTime, lower } from '@/lib/format';
 import { deleteDraft, listDrafts, type NeedDraft } from '@/lib/need-drafts';
+import { repeatBadge } from '@/lib/repeat';
 
 const MAX_SHOWN = 8;
 
@@ -129,7 +130,7 @@ export default function NewNeedScreen() {
                 <ThemedText type="small" themeColor="textSecondary">
                   {formatQuantity(need.quantity_needed, need.unit)} · last posted for{' '}
                   {formatDay(new Date(need.dropoff_starts_at))}
-                  {need.repeats_weekly ? ' · weekly' : ''}
+                  {need.repeat_frequency ? ` · ${repeatBadge(need.repeat_frequency)}` : ''}
                 </ThemedText>
               </View>
               <ThemedText type="bold" themeColor="tint">

@@ -15,6 +15,7 @@ import { confirm } from '@/lib/confirm';
 import { formatCheckinCode } from '@/lib/checkin';
 import { errorMessage, formatDay, formatQuantity, formatTime, formatWindow, lower } from '@/lib/format';
 import { NEED_STATUS, PLEDGE_STATUS } from '@/lib/labels';
+import { describeRepeat } from '@/lib/repeat';
 
 export default function StaffNeedScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -97,16 +98,16 @@ export default function StaffNeedScreen() {
           style={styles.fullWidth}
           onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: data.id } })}
         />
-        {data.repeats_weekly ? (
+        {data.repeat_frequency ? (
           <ThemedText type="small" themeColor="textSecondary" style={styles.repeat}>
-            repeats every week ·{' '}
+            repeats {describeRepeat(data.repeat_frequency, new Date(data.dropoff_starts_at))} ·{' '}
             <ThemedText
               type="link"
               accessibilityRole="button"
               onPress={async () => {
                 const ok = await confirm(
                   'stop repeating?',
-                  'this week’s need stays up, but next week’s won’t be posted.',
+                  'this one stays up, but the next one won’t be posted.',
                   'stop repeating',
                 );
                 if (ok) stopRepeating.mutate(data.id);

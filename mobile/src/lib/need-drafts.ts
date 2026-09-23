@@ -1,4 +1,5 @@
 import type { NeedCategory } from '@/lib/labels';
+import type { RepeatFrequency } from '@/lib/repeat';
 
 /**
  * Unfinished "post a need" forms, kept on this device per organization.
@@ -17,7 +18,7 @@ export type NeedDraft = {
     unit: string;
     startsAt: string;
     endsAt: string;
-    repeatsWeekly: boolean;
+    repeat: RepeatFrequency | null;
   };
 };
 
@@ -27,11 +28,19 @@ const key = (organizationId: string) => `need-drafts:${organizationId}`;
 export function listDrafts(organizationId: string): NeedDraft[] {
   try {
     const raw = localStorage.getItem(key(organizationId));
-    const drafts = raw ? (JSON.parse(raw) as NeedDraft[]) : [];
+    const drafts = (raw ? (JSON.parse(raw) as NeedDraft[]) : []).map(upgrade);
     return drafts.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
   } catch {
     return [];
   }
+}
+
+/** Drafts saved before other frequencies existed had a weekly on/off flag. */
+function upgrade(draft: NeedDraft): NeedDraft {
+  const fields = draft.fields as NeedDraft['fields'] & { repeatsWeekly?: boolean };
+  if (fields.repeat !== undefined) return draft;
+  const { repeatsWeekly, ...rest } = fields;
+  return { ...draft, fields: { ...rest, repeat: repeatsWeekly ? 'weekly' : null } };
 }
 
 export function getDraft(organizationId: string, draftId: string) {

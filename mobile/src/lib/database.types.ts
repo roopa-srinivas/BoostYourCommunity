@@ -107,8 +107,10 @@ export type Database = {
           organization_id: string
           quantity_committed: number
           quantity_needed: number
+          repeat_frequency:
+            | Database["public"]["Enums"]["repeat_frequency"]
+            | null
           repeat_series: string | null
-          repeats_weekly: boolean
           status: Database["public"]["Enums"]["need_status"]
           title: string
           unit: string
@@ -125,8 +127,10 @@ export type Database = {
           organization_id: string
           quantity_committed?: number
           quantity_needed: number
+          repeat_frequency?:
+            | Database["public"]["Enums"]["repeat_frequency"]
+            | null
           repeat_series?: string | null
-          repeats_weekly?: boolean
           status?: Database["public"]["Enums"]["need_status"]
           title: string
           unit?: string
@@ -143,8 +147,10 @@ export type Database = {
           organization_id?: string
           quantity_committed?: number
           quantity_needed?: number
+          repeat_frequency?:
+            | Database["public"]["Enums"]["repeat_frequency"]
+            | null
           repeat_series?: string | null
-          repeats_weekly?: boolean
           status?: Database["public"]["Enums"]["need_status"]
           title?: string
           unit?: string
@@ -487,6 +493,7 @@ export type Database = {
         | "other"
       organization_status: "pending" | "approved" | "suspended"
       pledge_status: "pledged" | "received" | "no_show" | "cancelled"
+      repeat_frequency: "daily" | "weekly" | "biweekly" | "monthly"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -628,6 +635,7 @@ export const Constants = {
       ],
       organization_status: ["pending", "approved", "suspended"],
       pledge_status: ["pledged", "received", "no_show", "cancelled"],
+      repeat_frequency: ["daily", "weekly", "biweekly", "monthly"],
     },
   },
 } as const

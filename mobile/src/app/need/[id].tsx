@@ -19,6 +19,7 @@ import { openDirections } from '@/lib/directions';
 import { errorMessage, formatQuantity, formatWindow, lower } from '@/lib/format';
 import { categoryLabel } from '@/lib/labels';
 import { scheduleDropoffReminder } from '@/lib/reminders';
+import { describeRepeat } from '@/lib/repeat';
 import { formatClosesIn, isClosingSoon } from '@/lib/urgency';
 
 export default function NeedScreen() {
@@ -92,9 +93,9 @@ export default function NeedScreen() {
             {formatClosesIn(data.dropoff_ends_at)}
           </ThemedText>
         ) : null}
-        {data.repeats_weekly ? (
+        {data.repeat_frequency ? (
           <ThemedText type="small" themeColor="textSecondary">
-            this need comes back every week.
+            this need comes back {describeRepeat(data.repeat_frequency, new Date(data.dropoff_starts_at))}.
           </ThemedText>
         ) : null}
       </Card>

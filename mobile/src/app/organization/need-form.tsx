@@ -10,13 +10,13 @@ import { DateTimeField } from '@/components/ui/date-time-field';
 import { ErrorText, Loading } from '@/components/ui/message';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
-import { ToggleRow } from '@/components/ui/toggle-row';
 import { Spacing } from '@/constants/theme';
 import type { Tables } from '@/lib/database.types';
 import { errorMessage } from '@/lib/format';
 import { goBackOr } from '@/lib/navigation';
 import { deleteDraft, getDraft, newDraftId, saveDraft, type NeedDraft } from '@/lib/need-drafts';
 import { CATEGORIES, type NeedCategory } from '@/lib/labels';
+import { describeRepeat, REPEAT_OPTIONS, type RepeatFrequency } from '@/lib/repeat';
 
 /**
  * Post a new need (`organizationId` param), edit one (`needId`), or post a
@@ -96,7 +96,7 @@ function startingFields({ need, draft, template }: { need?: Tables<'needs'>; dra
     startsAt: start.toISOString(),
     endsAt: end.toISOString(),
     // Editing keeps the current setting; a new need or a copy starts one-off.
-    repeatsWeekly: need?.repeats_weekly ?? false,
+    repeat: need?.repeat_frequency ?? null,
   };
 }
 
@@ -123,7 +123,7 @@ function NeedForm({
   const [details, setDetails] = useState(initial.details);
   const [quantity, setQuantity] = useState(initial.quantity);
   const [unit, setUnit] = useState(initial.unit);
-  const [repeatsWeekly, setRepeatsWeekly] = useState(initial.repeatsWeekly);
+  const [repeat, setRepeat] = useState<RepeatFrequency | null>(initial.repeat);
   const [startsAt, setStartsAt] = useState(() => new Date(initial.startsAt));
   const [endsAt, setEndsAt] = useState(() => new Date(initial.endsAt));
 
@@ -141,7 +141,7 @@ function NeedForm({
     unit,
     startsAt: startsAt.toISOString(),
     endsAt: endsAt.toISOString(),
-    repeatsWeekly,
+    repeat,
   };
   const currentKey = JSON.stringify(current);
   const changed = currentKey !== JSON.stringify(initial);
@@ -191,7 +191,7 @@ function NeedForm({
           unit: unit.trim(),
           dropoff_starts_at: startsAt.toISOString(),
           dropoff_ends_at: endsAt.toISOString(),
-          repeats_weekly: repeatsWeekly,
+          repeat_frequency: repeat,
         },
       });
       if (need) {
@@ -261,12 +261,20 @@ function NeedForm({
       />
       <DateTimeField label="drop-off ends" value={endsAt} onChange={setEndsAt} />
 
-      <ToggleRow
-        label="repeat every week"
-        hint="after this drop-off ends, we’ll post next week’s at the same day and time. stops by itself after 3 weeks in a row with no pledges."
-        value={repeatsWeekly}
-        onChange={setRepeatsWeekly}
-      />
+      <View style={styles.field}>
+        <ThemedText type="smallBold">repeat</ThemedText>
+        <ChipGroup
+          scroll
+          options={REPEAT_OPTIONS}
+          value={repeat ?? 'none'}
+          onChange={(value) => setRepeat(value === 'none' ? null : value)}
+        />
+        <ThemedText type="small" themeColor="textSecondary">
+          {repeat
+            ? `${describeRepeat(repeat, startsAt)}, at the same time. we post the next one after each drop-off ends, and stop by ourselves if nobody pledges ${repeat === 'daily' ? '7 days' : '3 times'} in a row.`
+            : 'post it once. you can always post it again later.'}
+        </ThemedText>
+      </View>
 
       {error ? <ErrorText>{error}</ErrorText> : null}
       <Button label={need ? 'save changes' : 'post need'} onPress={submit} loading={save.isPending} />

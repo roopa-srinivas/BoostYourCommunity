@@ -15,6 +15,7 @@ import { Spacing } from '@/constants/theme';
 import type { Tables } from '@/lib/database.types';
 import { errorMessage, formatWindow, lower } from '@/lib/format';
 import { NEED_STATUS, ORGANIZATION_STATUS } from '@/lib/labels';
+import { repeatBadge } from '@/lib/repeat';
 
 export default function OrganizationScreen() {
   const memberships = useMyOrganizations();
@@ -173,7 +174,7 @@ function StaffNeedCard({ need, showPostAgain }: { need: Tables<'needs'>; showPos
     <Card onPress={() => router.push({ pathname: '/organization/need/[id]', params: { id: need.id } })}>
       <View style={styles.badges}>
         <Badge label={status.label} tone={status.tone} />
-        {need.repeats_weekly ? <Badge label="weekly" tone="accent" /> : null}
+        {need.repeat_frequency ? <Badge label={repeatBadge(need.repeat_frequency)} tone="accent" /> : null}
       </View>
       <ThemedText type="bold" style={styles.orgName}>
         {lower(need.title)}
