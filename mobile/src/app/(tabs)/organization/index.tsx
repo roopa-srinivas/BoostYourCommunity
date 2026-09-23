@@ -156,7 +156,7 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
                 past needs
               </ThemedText>
               {past.map((need) => (
-                <StaffNeedCard key={need.id} need={need} />
+                <StaffNeedCard key={need.id} need={need} showPostAgain />
               ))}
             </>
           ) : null}
@@ -166,12 +166,15 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
   );
 }
 
-function StaffNeedCard({ need }: { need: Tables<'needs'> }) {
+function StaffNeedCard({ need, showPostAgain }: { need: Tables<'needs'>; showPostAgain?: boolean }) {
   const ended = need.status === 'open' && new Date(need.dropoff_ends_at) <= new Date();
   const status = ended ? { label: 'ended', tone: 'neutral' as const } : NEED_STATUS[need.status];
   return (
     <Card onPress={() => router.push({ pathname: '/organization/need/[id]', params: { id: need.id } })}>
-      <Badge label={status.label} tone={status.tone} />
+      <View style={styles.badges}>
+        <Badge label={status.label} tone={status.tone} />
+        {need.repeats_weekly ? <Badge label="weekly" tone="accent" /> : null}
+      </View>
       <ThemedText type="bold" style={styles.orgName}>
         {lower(need.title)}
       </ThemedText>
@@ -181,6 +184,16 @@ function StaffNeedCard({ need }: { need: Tables<'needs'> }) {
       <ThemedText type="small" themeColor="textSecondary">
         drop off {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
       </ThemedText>
+      {showPostAgain ? (
+        <ThemedText
+          type="link"
+          accessibilityRole="button"
+          accessibilityLabel={`post ${lower(need.title)} again`}
+          style={styles.postAgain}
+          onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: need.id } })}>
+          post again
+        </ThemedText>
+      ) : null}
     </Card>
   );
 }
@@ -189,5 +202,7 @@ const styles = StyleSheet.create({
   orgName: { marginTop: Spacing.one },
   note: { marginTop: Spacing.two },
   sectionTitle: { marginTop: Spacing.two },
+  badges: { flexDirection: 'row', gap: Spacing.two },
+  postAgain: { marginTop: Spacing.one, alignSelf: 'flex-start' },
   links: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.four },
 });

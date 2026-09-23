@@ -2,7 +2,7 @@ import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { useNeed, useSetNeedStatus } from '@/api/needs';
+import { useNeed, useSetNeedStatus, useStopRepeating } from '@/api/needs';
 import { useNeedPledges, useResolvePledge } from '@/api/pledges';
 import { ThemedText } from '@/components/themed-text';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +22,7 @@ export default function StaffNeedScreen() {
   const pledges = useNeedPledges(id);
   const resolve = useResolvePledge();
   const setStatus = useSetNeedStatus();
+  const stopRepeating = useStopRepeating();
   // Read the clock once when the screen opens, not on every render.
   const [now] = useState(() => Date.now());
 
@@ -52,7 +53,7 @@ export default function StaffNeedScreen() {
     if (ok) setStatus.mutate({ needId: data.id, status: 'closed' });
   }
 
-  const mutationError = resolve.error ?? setStatus.error;
+  const mutationError = resolve.error ?? setStatus.error ?? stopRepeating.error;
 
   return (
     <Screen onRefresh={() => Promise.all([need.refetch(), pledges.refetch()])}>
@@ -96,6 +97,24 @@ export default function StaffNeedScreen() {
           style={styles.fullWidth}
           onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: data.id } })}
         />
+        {data.repeats_weekly ? (
+          <ThemedText type="small" themeColor="textSecondary" style={styles.repeat}>
+            repeats every week ·{' '}
+            <ThemedText
+              type="link"
+              accessibilityRole="button"
+              onPress={async () => {
+                const ok = await confirm(
+                  'stop repeating?',
+                  'this week’s need stays up, but next week’s won’t be posted.',
+                  'stop repeating',
+                );
+                if (ok) stopRepeating.mutate(data.id);
+              }}>
+              stop repeating
+            </ThemedText>
+          </ThemedText>
+        ) : null}
       </Card>
 
       {mutationError ? <ErrorText>{errorMessage(mutationError)}</ErrorText> : null}
@@ -186,6 +205,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two },
   action: { flex: 1 },
   fullWidth: { marginTop: Spacing.two },
+  repeat: { marginTop: Spacing.two, textAlign: 'center' },
   correction: { marginTop: Spacing.two, alignSelf: 'flex-start', minHeight: 36 },
   rowHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: Spacing.two },
 });

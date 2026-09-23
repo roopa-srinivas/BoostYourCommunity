@@ -10,6 +10,7 @@ import { DateTimeField } from '@/components/ui/date-time-field';
 import { ErrorText, Loading } from '@/components/ui/message';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
+import { ToggleRow } from '@/components/ui/toggle-row';
 import { Spacing } from '@/constants/theme';
 import type { Tables } from '@/lib/database.types';
 import { errorMessage } from '@/lib/format';
@@ -94,6 +95,8 @@ function NeedForm({
   const [details, setDetails] = useState(source?.details ?? '');
   const [quantity, setQuantity] = useState(source ? String(source.quantity_needed) : '');
   const [unit, setUnit] = useState(source?.unit ?? 'items');
+  // Editing keeps the current setting; a new need or a copy starts off one-off.
+  const [repeatsWeekly, setRepeatsWeekly] = useState(need?.repeats_weekly ?? false);
   const [startsAt, setStartsAt] = useState(() =>
     need ? new Date(need.dropoff_starts_at) : (copiedWindow?.start ?? nextHour()),
   );
@@ -125,6 +128,7 @@ function NeedForm({
           unit: unit.trim(),
           dropoff_starts_at: startsAt.toISOString(),
           dropoff_ends_at: endsAt.toISOString(),
+          repeats_weekly: repeatsWeekly,
         },
       });
       if (need) goBackOr({ pathname: '/organization/need/[id]', params: { id } });
@@ -181,6 +185,13 @@ function NeedForm({
         }}
       />
       <DateTimeField label="drop-off ends" value={endsAt} onChange={setEndsAt} />
+
+      <ToggleRow
+        label="repeat every week"
+        hint="after this drop-off ends, we’ll post next week’s at the same day and time. stops by itself after 3 weeks in a row with no pledges."
+        value={repeatsWeekly}
+        onChange={setRepeatsWeekly}
+      />
 
       {error ? <ErrorText>{error}</ErrorText> : null}
       <Button label={need ? 'save changes' : 'post need'} onPress={submit} loading={save.isPending} />

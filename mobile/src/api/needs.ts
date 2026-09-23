@@ -64,7 +64,14 @@ export function useOrganizationNeeds(organizationId: string | undefined) {
 
 export type NeedFields = Pick<
   TablesInsert<'needs'>,
-  'category' | 'title' | 'details' | 'quantity_needed' | 'unit' | 'dropoff_starts_at' | 'dropoff_ends_at'
+  | 'category'
+  | 'title'
+  | 'details'
+  | 'quantity_needed'
+  | 'unit'
+  | 'dropoff_starts_at'
+  | 'dropoff_ends_at'
+  | 'repeats_weekly'
 >;
 
 /** Creates a need when `needId` is missing, otherwise updates it. Returns the need's id. */
@@ -103,6 +110,18 @@ export function useSetNeedStatus() {
   return useMutation({
     mutationFn: async ({ needId, status }: { needId: string; status: NeedStatus }) => {
       const { error } = await supabase.from('needs').update({ status }).eq('id', needId);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['needs'] }),
+  });
+}
+
+/** Stop a weekly need from being posted again (the current week stays). */
+export function useStopRepeating() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (needId: string) => {
+      const { error } = await supabase.rpc('stop_repeating', { need_id: needId });
       if (error) throw error;
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['needs'] }),

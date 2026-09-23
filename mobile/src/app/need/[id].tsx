@@ -92,6 +92,11 @@ export default function NeedScreen() {
             {formatClosesIn(data.dropoff_ends_at)}
           </ThemedText>
         ) : null}
+        {data.repeats_weekly ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            this need comes back every week.
+          </ThemedText>
+        ) : null}
       </Card>
 
       {organization ? (
