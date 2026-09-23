@@ -1,13 +1,17 @@
 import { Pressable, StyleSheet, View, type ViewProps } from 'react-native';
 
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type CardProps = ViewProps & { onPress?: () => void };
 
 export function Card({ style, onPress, children, ...rest }: CardProps) {
   const theme = useTheme();
-  const cardStyle = [styles.card, { backgroundColor: theme.backgroundElement }, style];
+  const cardStyle = [
+    styles.card,
+    { backgroundColor: theme.backgroundElement, boxShadow: `0 1px 3px ${theme.shadow}` },
+    style,
+  ];
 
   if (onPress) {
     return (
@@ -27,6 +31,6 @@ export function Card({ style, onPress, children, ...rest }: CardProps) {
 }
 
 const styles = StyleSheet.create({
-  card: { borderRadius: Spacing.three, padding: Spacing.three, gap: Spacing.one },
-  pressed: { opacity: 0.75 },
+  card: { borderRadius: Radius.card, padding: Spacing.three, gap: Spacing.one },
+  pressed: { opacity: 0.8 },
 });

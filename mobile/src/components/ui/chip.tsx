@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { FontFamily, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 type ChipProps = {
@@ -21,10 +21,13 @@ export function Chip({ label, selected, onPress }: ChipProps) {
         styles.chip,
         {
           backgroundColor: selected ? theme.tint : theme.backgroundElement,
+          boxShadow: selected ? undefined : `0 1px 2px ${theme.shadow}`,
           opacity: pressed ? 0.8 : 1,
         },
       ]}>
-      <ThemedText type="smallBold" style={{ color: selected ? theme.onTint : theme.text }}>
+      <ThemedText
+        type="small"
+        style={{ color: selected ? theme.onTint : theme.text, fontFamily: selected ? FontFamily.bold : FontFamily.medium }}>
         {label}
       </ThemedText>
     </Pressable>
@@ -62,9 +65,9 @@ export function ChipGroup<T extends string | number>({ options, value, onChange,
 const styles = StyleSheet.create({
   chip: {
     paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: 999,
+    paddingVertical: Spacing.two + 2,
+    borderRadius: Radius.pill,
   },
-  row: { flexDirection: 'row', gap: Spacing.two },
+  row: { flexDirection: 'row', gap: Spacing.two, paddingVertical: Spacing.half },
   wrap: { flexWrap: 'wrap' },
 });

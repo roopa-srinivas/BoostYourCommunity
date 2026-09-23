@@ -4,13 +4,14 @@ import { ThemedText } from '@/components/themed-text';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
-export type BadgeTone = 'neutral' | 'info' | 'success' | 'warning' | 'danger';
+export type BadgeTone = 'neutral' | 'info' | 'accent' | 'success' | 'warning' | 'danger';
 
 export function Badge({ label, tone = 'neutral' }: { label: string; tone?: BadgeTone }) {
   const theme = useTheme();
   const colors = {
     neutral: [theme.backgroundSelected, theme.textSecondary],
     info: [theme.tintSoft, theme.tint],
+    accent: [theme.accentSoft, theme.accent],
     success: [theme.successSoft, theme.success],
     warning: [theme.warningSoft, theme.warning],
     danger: [theme.dangerSoft, theme.danger],

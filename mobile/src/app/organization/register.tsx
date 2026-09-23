@@ -44,11 +44,11 @@ export default function RegisterOrganizationScreen() {
       const position = await withTimeout(
         (async () => {
           const { status } = await Location.requestForegroundPermissionsAsync();
-          if (status !== 'granted') throw new Error('Allow location access to use your current location.');
+          if (status !== 'granted') throw new Error('allow location access to use your current location.');
           return Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
         })(),
         LOCATION_TIMEOUT_MS,
-        'We couldn’t get your location. Check that location access is allowed, or enter the address instead.',
+        'we couldn’t get your location. check that location access is allowed, or enter the address instead.',
       );
       setHere({ latitude: position.coords.latitude, longitude: position.coords.longitude });
     } catch (e) {
@@ -61,13 +61,13 @@ export default function RegisterOrganizationScreen() {
   async function submit() {
     setError(null);
     if (name.trim().length < 2 || !address.trim()) {
-      setError('Enter your organization’s name and street address.');
+      setError('enter your organization’s name and street address.');
       return;
     }
     const location = here ?? (await geocode(address.trim()));
     if (!location) {
       setError(
-        'We couldn’t find that address on the map. Check it, or tap “Use my current location” if you’re there now.',
+        'we couldn’t find that address on the map. check it, or tap “use my current location” if you’re there now.',
       );
       return;
     }
@@ -90,42 +90,42 @@ export default function RegisterOrganizationScreen() {
   return (
     <Screen>
       <ThemedText type="small" themeColor="textSecondary">
-        After you register, we review your organization before donors can see it. You’ll be its owner and can post
+        after you register, we review your organization before donors can see it. you’ll be its owner and can post
         needs once it’s approved.
       </ThemedText>
 
-      <TextField label="Organization name" value={name} onChangeText={setName} />
+      <TextField label="organization name" value={name} onChangeText={setName} />
       <View style={styles.field}>
-        <ThemedText type="smallBold">Type</ThemedText>
+        <ThemedText type="smallBold">type</ThemedText>
         <ChipGroup options={ORGANIZATION_KINDS} value={kind} onChange={setKind} />
       </View>
       <TextField
-        label="Drop-off address"
+        label="drop-off address"
         value={address}
         onChangeText={(text) => {
           setAddress(text);
           setHere(null);
         }}
-        placeholder="Street, city, state"
+        placeholder="street, city, state"
         autoComplete="street-address"
-        hint={here ? 'Using your current location for the map pin.' : 'Where donors should bring items.'}
+        hint={here ? 'using your current location for the map pin.' : 'where donors should bring items.'}
       />
       <Button
         variant="secondary"
-        label="Use my current location"
+        label="use my current location"
         onPress={useCurrentLocation}
         loading={locating}
       />
       <TextField
-        label="About (optional)"
+        label="about (optional)"
         value={description}
         onChangeText={setDescription}
         multiline
-        placeholder="Who you serve, hours, anything donors should know"
+        placeholder="who you serve, hours, anything donors should know"
       />
-      <TextField label="Phone (optional)" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+      <TextField label="phone (optional)" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
       <TextField
-        label="Website (optional)"
+        label="website (optional)"
         value={website}
         onChangeText={setWebsite}
         autoCapitalize="none"
@@ -133,7 +133,7 @@ export default function RegisterOrganizationScreen() {
       />
 
       {error ? <ErrorText>{error}</ErrorText> : null}
-      <Button label="Register organization" onPress={submit} loading={register.isPending} />
+      <Button label="register organization" onPress={submit} loading={register.isPending} />
     </Screen>
   );
 }

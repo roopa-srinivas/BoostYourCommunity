@@ -26,7 +26,7 @@ export function Stepper({ value, min = 1, max, onChange, suffix }: StepperProps)
         styles.button,
         { backgroundColor: theme.backgroundSelected, opacity: disabled ? 0.4 : pressed ? 0.7 : 1 },
       ]}>
-      <ThemedText type="subtitle" style={styles.buttonLabel}>
+      <ThemedText type="bold" style={styles.buttonLabel}>
         {label}
       </ThemedText>
     </Pressable>
@@ -51,6 +51,6 @@ export function Stepper({ value, min = 1, max, onChange, suffix }: StepperProps)
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   button: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
-  buttonLabel: { lineHeight: 34 },
+  buttonLabel: { fontSize: 24, lineHeight: 28 },
   value: { minWidth: 80, alignItems: 'center' },
 });

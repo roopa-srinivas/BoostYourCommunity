@@ -1,7 +1,7 @@
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
-import { Spacing } from '@/constants/theme';
+import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export function ErrorText({ children }: { children: React.ReactNode }) {
@@ -39,7 +39,7 @@ export function Loading() {
 }
 
 const styles = StyleSheet.create({
-  error: { padding: Spacing.three, borderRadius: Spacing.two + Spacing.one },
+  error: { padding: Spacing.three, borderRadius: Radius.field },
   empty: { paddingVertical: Spacing.five, paddingHorizontal: Spacing.three, gap: Spacing.one, alignItems: 'center' },
   center: { textAlign: 'center' },
 });

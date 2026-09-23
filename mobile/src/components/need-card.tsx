@@ -1,39 +1,55 @@
 import { StyleSheet, View } from 'react-native';
 
 import type { NearbyNeed } from '@/api/needs';
+import { CategoryIcon } from '@/components/category-icon';
 import { ThemedText } from '@/components/themed-text';
-import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { ProgressBar } from '@/components/ui/progress-bar';
 import { Spacing } from '@/constants/theme';
-import { formatDistance, formatWindow } from '@/lib/format';
-import { categoryLabel } from '@/lib/labels';
+import { formatDistance, formatQuantity, formatWindow } from '@/lib/format';
 
 export function NeedCard({ need, onPress }: { need: NearbyNeed; onPress: () => void }) {
+  const pledged = need.quantity_needed - need.quantity_remaining;
   return (
-    <Card onPress={onPress}>
-      <View style={styles.header}>
-        <Badge label={categoryLabel(need.category)} tone="info" />
-        <ThemedText type="small" themeColor="textSecondary">
-          {formatDistance(need.distance_m)}
+    <Card onPress={onPress} style={styles.card}>
+      <CategoryIcon category={need.category} />
+      <View style={styles.body}>
+        <View style={styles.titleRow}>
+          <ThemedText type="bold" style={styles.title} numberOfLines={2}>
+            {need.title}
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {formatDistance(need.distance_m)}
+          </ThemedText>
+        </View>
+        <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
+          {need.organization_name}
         </ThemedText>
+        <View style={styles.progress}>
+          <ProgressBar
+            value={pledged / need.quantity_needed}
+            accessibilityLabel={`${pledged} of ${need.quantity_needed} pledged`}
+          />
+        </View>
+        <View style={styles.footer}>
+          <ThemedText type="small" themeColor="textSecondary" style={styles.flex}>
+            <ThemedText type="smallBold">{formatQuantity(need.quantity_remaining, need.unit)}</ThemedText> still needed
+          </ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
+          </ThemedText>
+        </View>
       </View>
-      <ThemedText type="smallBold" style={styles.title}>
-        {need.title}
-      </ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        {need.organization_name}
-      </ThemedText>
-      <ThemedText type="small">
-        {need.quantity_remaining} of {need.quantity_needed} {need.unit} still needed
-      </ThemedText>
-      <ThemedText type="small" themeColor="textSecondary">
-        Drop off {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
-      </ThemedText>
     </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: Spacing.one },
-  title: { fontSize: 17 },
+  card: { flexDirection: 'row', gap: Spacing.three - 2, alignItems: 'flex-start' },
+  body: { flex: 1, gap: Spacing.half },
+  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: Spacing.two },
+  title: { flex: 1 },
+  progress: { marginTop: Spacing.two, marginBottom: Spacing.one },
+  footer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', columnGap: Spacing.two },
+  flex: { flexShrink: 1 },
 });

@@ -25,7 +25,7 @@ export default function StaffNeedScreen() {
   if (!need.data) {
     return (
       <Screen>
-        <ErrorText>{need.error ? errorMessage(need.error) : 'This need could not be found.'}</ErrorText>
+        <ErrorText>{need.error ? errorMessage(need.error) : 'this need could not be found.'}</ErrorText>
       </Screen>
     );
   }
@@ -39,9 +39,9 @@ export default function StaffNeedScreen() {
 
   async function close() {
     const ok = await confirm(
-      'Stop taking pledges?',
-      'Donors won’t see this need anymore. You can still confirm drop-offs that were already pledged.',
-      'Close need',
+      'stop taking pledges?',
+      'donors won’t see this need anymore. you can still confirm drop-offs that were already pledged.',
+      'close need',
     );
     if (ok) setStatus.mutate({ needId: data.id, status: 'closed' });
   }
@@ -59,28 +59,28 @@ export default function StaffNeedScreen() {
 
       <Card>
         <Badge label={status.label} tone={status.tone} />
-        <ThemedText type="smallBold" style={styles.title}>
+        <ThemedText type="sectionTitle" style={styles.title}>
           {data.title}
         </ThemedText>
         <ThemedText type="small">
           {data.quantity_committed} of {data.quantity_needed} {data.unit} pledged · {received} received
         </ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
-          Drop off {formatWindow(data.dropoff_starts_at, data.dropoff_ends_at)}
+          drop off {formatWindow(data.dropoff_starts_at, data.dropoff_ends_at)}
         </ThemedText>
         <View style={styles.actions}>
           <Button
             variant="secondary"
-            label="Edit"
+            label="edit"
             style={styles.action}
             onPress={() => router.push({ pathname: '/organization/need-form', params: { needId: data.id } })}
           />
           {data.status === 'open' ? (
-            <Button variant="danger" label="Close" style={styles.action} onPress={close} loading={setStatus.isPending} />
+            <Button variant="danger" label="close" style={styles.action} onPress={close} loading={setStatus.isPending} />
           ) : (
             <Button
               variant="secondary"
-              label="Reopen"
+              label="reopen"
               style={styles.action}
               loading={setStatus.isPending}
               onPress={() => setStatus.mutate({ needId: data.id, status: 'open' })}
@@ -92,26 +92,26 @@ export default function StaffNeedScreen() {
       {mutationError ? <ErrorText>{errorMessage(mutationError)}</ErrorText> : null}
       {pledges.error ? <ErrorText>{errorMessage(pledges.error)}</ErrorText> : null}
 
-      <ThemedText type="smallBold" style={styles.sectionTitle}>
-        Expected drop-offs
+      <ThemedText type="sectionTitle" style={styles.sectionTitle}>
+        expected drop-offs
       </ThemedText>
       {pledges.isPending ? (
         <Loading />
       ) : expected.length === 0 ? (
-        <EmptyState title="No pledges waiting" body="When donors pledge, they’ll show up here." />
+        <EmptyState title="no pledges waiting" body="when donors pledge, they’ll show up here." />
       ) : (
         expected.map((pledge) => (
           <PledgeRow key={pledge.id} pledge={pledge} unit={data.unit}>
             <View style={styles.actions}>
               <Button
-                label="Received"
+                label="received"
                 style={styles.action}
                 disabled={resolve.isPending}
                 onPress={() => resolve.mutate({ pledgeId: pledge.id, outcome: 'received' })}
               />
               <Button
                 variant="secondary"
-                label="Didn’t arrive"
+                label="didn’t arrive"
                 style={styles.action}
                 disabled={resolve.isPending}
                 onPress={() => resolve.mutate({ pledgeId: pledge.id, outcome: 'no_show' })}
@@ -123,15 +123,15 @@ export default function StaffNeedScreen() {
 
       {resolved.length > 0 ? (
         <>
-          <ThemedText type="smallBold" style={styles.sectionTitle}>
-            Resolved
+          <ThemedText type="sectionTitle" style={styles.sectionTitle}>
+            resolved
           </ThemedText>
           {resolved.map((pledge) => (
             <PledgeRow key={pledge.id} pledge={pledge} unit={data.unit}>
               {pledge.status === 'received' || pledge.status === 'no_show' ? (
                 <Button
                   variant="secondary"
-                  label={pledge.status === 'received' ? 'Mark as didn’t arrive' : 'Mark as received'}
+                  label={pledge.status === 'received' ? 'mark as didn’t arrive' : 'mark as received'}
                   style={styles.correction}
                   disabled={resolve.isPending}
                   onPress={() =>
@@ -159,12 +159,12 @@ function PledgeRow({ pledge, unit, children }: { pledge: Pledge; unit: string; c
     <Card>
       <View style={styles.rowHeader}>
         <ThemedText type="smallBold">
-          {pledge.donor?.display_name ?? 'A donor'} · {formatQuantity(pledge.quantity, unit)}
+          {pledge.donor?.display_name ?? 'a donor'} · {formatQuantity(pledge.quantity, unit)}
         </ThemedText>
         <Badge label={status.label} tone={status.tone} />
       </View>
       <ThemedText type="small" themeColor="textSecondary">
-        Pledged {formatDay(createdAt)} at {formatTime(createdAt)}
+        pledged {formatDay(createdAt)} at {formatTime(createdAt)}
       </ThemedText>
       {children}
     </Card>
@@ -172,7 +172,7 @@ function PledgeRow({ pledge, unit, children }: { pledge: Pledge; unit: string; c
 }
 
 const styles = StyleSheet.create({
-  title: { marginTop: Spacing.one, fontSize: 17 },
+  title: { marginTop: Spacing.one },
   sectionTitle: { marginTop: Spacing.two },
   actions: { flexDirection: 'row', gap: Spacing.two, marginTop: Spacing.two },
   action: { flex: 1 },
