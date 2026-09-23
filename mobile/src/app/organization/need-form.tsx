@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useNeed, useSaveNeed } from '@/api/needs';
-import { PastNeedPicker } from '@/components/past-need-picker';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { ChipGroup } from '@/components/ui/chip';
@@ -142,7 +141,6 @@ function NeedForm({
   return (
     <Screen>
       <Stack.Screen options={{ title: need ? 'edit need' : template ? 'post again' : 'post a need' }} />
-      {!need && !template ? <PastNeedPicker organizationId={organizationId} /> : null}
       {template ? (
         <ThemedText type="small" themeColor="textSecondary">
           copied from a past need, with a new drop-off window at the same time of day. check the dates and how many

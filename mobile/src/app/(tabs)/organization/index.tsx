@@ -90,7 +90,7 @@ export default function OrganizationScreen() {
                 variant="secondary"
                 label="post a need"
                 onPress={() =>
-                  router.push({ pathname: '/organization/need-form', params: { organizationId: organization.id } })
+                  router.push({ pathname: '/organization/new-need', params: { organizationId: organization.id } })
                 }
               />
             </>
