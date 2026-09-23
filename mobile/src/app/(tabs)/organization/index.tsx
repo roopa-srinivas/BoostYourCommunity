@@ -15,6 +15,7 @@ import { Spacing } from '@/constants/theme';
 import type { Tables } from '@/lib/database.types';
 import { errorMessage, formatWindow, lower } from '@/lib/format';
 import { NEED_STATUS, ORGANIZATION_STATUS } from '@/lib/labels';
+import { repeatBadge } from '@/lib/repeat';
 
 export default function OrganizationScreen() {
   const memberships = useMyOrganizations();
@@ -90,7 +91,7 @@ export default function OrganizationScreen() {
                 variant="secondary"
                 label="post a need"
                 onPress={() =>
-                  router.push({ pathname: '/organization/need-form', params: { organizationId: organization.id } })
+                  router.push({ pathname: '/organization/new-need', params: { organizationId: organization.id } })
                 }
               />
             </>
@@ -156,7 +157,7 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
                 past needs
               </ThemedText>
               {past.map((need) => (
-                <StaffNeedCard key={need.id} need={need} />
+                <StaffNeedCard key={need.id} need={need} showPostAgain />
               ))}
             </>
           ) : null}
@@ -166,12 +167,15 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
   );
 }
 
-function StaffNeedCard({ need }: { need: Tables<'needs'> }) {
+function StaffNeedCard({ need, showPostAgain }: { need: Tables<'needs'>; showPostAgain?: boolean }) {
   const ended = need.status === 'open' && new Date(need.dropoff_ends_at) <= new Date();
   const status = ended ? { label: 'ended', tone: 'neutral' as const } : NEED_STATUS[need.status];
   return (
     <Card onPress={() => router.push({ pathname: '/organization/need/[id]', params: { id: need.id } })}>
-      <Badge label={status.label} tone={status.tone} />
+      <View style={styles.badges}>
+        <Badge label={status.label} tone={status.tone} />
+        {need.repeat_frequency ? <Badge label={repeatBadge(need.repeat_frequency)} tone="accent" /> : null}
+      </View>
       <ThemedText type="bold" style={styles.orgName}>
         {lower(need.title)}
       </ThemedText>
@@ -181,6 +185,16 @@ function StaffNeedCard({ need }: { need: Tables<'needs'> }) {
       <ThemedText type="small" themeColor="textSecondary">
         drop off {formatWindow(need.dropoff_starts_at, need.dropoff_ends_at)}
       </ThemedText>
+      {showPostAgain ? (
+        <ThemedText
+          type="link"
+          accessibilityRole="button"
+          accessibilityLabel={`post ${lower(need.title)} again`}
+          style={styles.postAgain}
+          onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: need.id } })}>
+          post again
+        </ThemedText>
+      ) : null}
     </Card>
   );
 }
@@ -189,5 +203,7 @@ const styles = StyleSheet.create({
   orgName: { marginTop: Spacing.one },
   note: { marginTop: Spacing.two },
   sectionTitle: { marginTop: Spacing.two },
+  badges: { flexDirection: 'row', gap: Spacing.two },
+  postAgain: { marginTop: Spacing.one, alignSelf: 'flex-start' },
   links: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.four },
 });

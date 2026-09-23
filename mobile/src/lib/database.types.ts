@@ -107,6 +107,10 @@ export type Database = {
           organization_id: string
           quantity_committed: number
           quantity_needed: number
+          repeat_frequency:
+            | Database["public"]["Enums"]["repeat_frequency"]
+            | null
+          repeat_series: string | null
           status: Database["public"]["Enums"]["need_status"]
           title: string
           unit: string
@@ -123,6 +127,10 @@ export type Database = {
           organization_id: string
           quantity_committed?: number
           quantity_needed: number
+          repeat_frequency?:
+            | Database["public"]["Enums"]["repeat_frequency"]
+            | null
+          repeat_series?: string | null
           status?: Database["public"]["Enums"]["need_status"]
           title: string
           unit?: string
@@ -139,6 +147,10 @@ export type Database = {
           organization_id?: string
           quantity_committed?: number
           quantity_needed?: number
+          repeat_frequency?:
+            | Database["public"]["Enums"]["repeat_frequency"]
+            | null
+          repeat_series?: string | null
           status?: Database["public"]["Enums"]["need_status"]
           title?: string
           unit?: string
@@ -264,6 +276,7 @@ export type Database = {
           name: string
           phone: string | null
           status: Database["public"]["Enums"]["organization_status"]
+          timezone: string
           website: string | null
         }
         Insert: {
@@ -280,6 +293,7 @@ export type Database = {
           name: string
           phone?: string | null
           status?: Database["public"]["Enums"]["organization_status"]
+          timezone?: string
           website?: string | null
         }
         Update: {
@@ -296,6 +310,7 @@ export type Database = {
           name?: string
           phone?: string | null
           status?: Database["public"]["Enums"]["organization_status"]
+          timezone?: string
           website?: string | null
         }
         Relationships: [
@@ -450,6 +465,7 @@ export type Database = {
         }[]
       }
       new_checkin_code: { Args: never; Returns: string }
+      post_next_repeating_needs: { Args: never; Returns: number }
       resolve_pledge: {
         Args: {
           outcome: Database["public"]["Enums"]["pledge_status"]
@@ -464,6 +480,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      stop_repeating: { Args: { need_id: string }; Returns: undefined }
     }
     Enums: {
       member_role: "owner" | "staff"
@@ -476,6 +493,7 @@ export type Database = {
         | "other"
       organization_status: "pending" | "approved" | "suspended"
       pledge_status: "pledged" | "received" | "no_show" | "cancelled"
+      repeat_frequency: "daily" | "weekly" | "biweekly" | "monthly"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -617,6 +635,7 @@ export const Constants = {
       ],
       organization_status: ["pending", "approved", "suspended"],
       pledge_status: ["pledged", "received", "no_show", "cancelled"],
+      repeat_frequency: ["daily", "weekly", "biweekly", "monthly"],
     },
   },
 } as const

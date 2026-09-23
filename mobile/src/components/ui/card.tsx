@@ -17,6 +17,7 @@ export function Card({ style, onPress, children, ...rest }: CardProps) {
     return (
       <Pressable
         accessibilityRole="button"
+        {...rest}
         onPress={onPress}
         style={({ pressed }) => [cardStyle, pressed && styles.pressed]}>
         {children}
