@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Check-in code · Boost Your Community</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="legal.css">
+  <style>
+    main { text-align: center; padding-top: 72px; }
+    .code {
+      font-family: 'Fraunces', Georgia, serif; font-weight: 600; font-size: 3.2rem; letter-spacing: 0.12em;
+      margin: 20px 0; padding: 20px 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 22px;
+    }
+    .muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <p class="muted">boost your community</p>
+  <h1 id="title">your check-in code</h1>
+  <div class="code" id="code" aria-live="polite"></div>
+  <p id="message">show this code to the staff when you drop off your donation. they’ll scan it or type it in the Boost Your Community app to confirm it arrived.</p>
+  <p class="muted" id="hint">you can also find it any time in the app, under my pledges.</p>
+</main>
+<script>
+  // The code is in the part of the link after "#", which is never sent to a server.
+  const code = decodeURIComponent(location.hash.slice(1)).trim().toUpperCase();
+  const valid = /^[A-HJ-KM-NP-Z2-9]{6}$/.test(code);
+  if (valid) {
+    const el = document.getElementById('code');
+    el.textContent = code.slice(0, 3) + ' ' + code.slice(3);
+    el.setAttribute('aria-label', code.split('').join(' '));
+  } else {
+    document.getElementById('title').textContent = 'no check-in code here';
+    document.getElementById('code').remove();
+    document.getElementById('message').textContent =
+      'this link doesn’t contain a check-in code. open the Boost Your Community app and find your code under my pledges.';
+    document.getElementById('hint').remove();
+  }
+</script>
+</body>
+</html>

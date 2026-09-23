@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { useOrganizationNeeds } from '@/api/needs';
 import { useMyOrganizations } from '@/api/organizations';
@@ -24,10 +24,11 @@ export default function OrganizationScreen() {
 
   const organizations = (memberships.data ?? []).flatMap((m) => (m.organization ? [m.organization] : []));
   const organization = organizations.find((o) => o.id === chosenId) ?? organizations[0];
+  const isOwner = memberships.data?.some((m) => m.organization?.id === organization?.id && m.role === 'owner') ?? false;
 
   if (!organization) {
     return (
-      <Screen refreshing={memberships.isRefetching} onRefresh={memberships.refetch}>
+      <Screen onRefresh={memberships.refetch}>
         {memberships.error ? <ErrorText>{errorMessage(memberships.error)}</ErrorText> : null}
         <ThemedText type="sectionTitle">do you work or volunteer at a shelter, pantry or community fridge?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
@@ -75,13 +76,40 @@ export default function OrganizationScreen() {
             ) : null}
           </Card>
           {organization.status === 'approved' ? (
-            <Button
-              label="post a need"
-              onPress={() =>
-                router.push({ pathname: '/organization/need-form', params: { organizationId: organization.id } })
-              }
-            />
+            <>
+              <Button
+                label="check in a drop-off"
+                onPress={() => router.push('/organization/checkin')}
+              />
+              <Button
+                variant="secondary"
+                label="post a need"
+                onPress={() =>
+                  router.push({ pathname: '/organization/need-form', params: { organizationId: organization.id } })
+                }
+              />
+            </>
           ) : null}
+          <View style={styles.links}>
+            {organization.status === 'approved' ? (
+              <ThemedText
+                type="link"
+                accessibilityRole="link"
+                onPress={() => router.push({ pathname: '/org/[id]', params: { id: organization.id } })}>
+                view your page
+              </ThemedText>
+            ) : null}
+            {isOwner ? (
+              <ThemedText
+                type="link"
+                accessibilityRole="link"
+                onPress={() =>
+                  router.push({ pathname: '/organization/edit-page', params: { organizationId: organization.id } })
+                }>
+                edit your page
+              </ThemedText>
+            ) : null}
+          </View>
         </>
       }
     />
@@ -96,7 +124,7 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
   const past = (needs.data ?? []).filter((need) => !isActive(need)).reverse();
 
   return (
-    <Screen refreshing={needs.isRefetching} onRefresh={needs.refetch}>
+    <Screen onRefresh={needs.refetch}>
       {header}
       {needs.error ? <ErrorText>{errorMessage(needs.error)}</ErrorText> : null}
       {needs.isPending ? (
@@ -150,4 +178,5 @@ const styles = StyleSheet.create({
   orgName: { marginTop: Spacing.one },
   note: { marginTop: Spacing.two },
   sectionTitle: { marginTop: Spacing.two },
+  links: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.four },
 });

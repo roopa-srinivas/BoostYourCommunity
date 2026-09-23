@@ -264,3 +264,50 @@ select pg_temp.ok('a pledge within the grace period stays pledged',
 select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
 select pg_temp.rejects('users cannot run expiry themselves', 'select public.expire_stale_pledges()');
 reset role;
+
+-- Organization pages ------------------------------------------------------------------
+select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
+update public.organizations set hours = 'weekdays 9–5', accepts = 'new socks', does_not_accept = 'used clothing'
+  where id = '00000000-0000-4000-8000-000000000002';
+reset role;
+select pg_temp.ok('owners can set hours and what they accept',
+  (select accepts = 'new socks' and does_not_accept = 'used clothing' from public.organizations
+   where id = '00000000-0000-4000-8000-000000000002'));
+select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
+update public.organizations set accepts = 'hacked' where id = '00000000-0000-4000-8000-000000000002';
+reset role;
+select pg_temp.ok('non-members cannot edit an organization''s page',
+  (select accepts from public.organizations where id = '00000000-0000-4000-8000-000000000002') = 'new socks');
+select pg_temp.act_as(null);
+select pg_temp.ok('organization pages are public',
+  (select hours from public.organizations where id = '00000000-0000-4000-8000-000000000002') = 'weekdays 9–5');
+reset role;
+
+-- Check-in codes -------------------------------------------------------------------------
+select pg_temp.ok('existing pledges got check-in codes',
+  not exists (select 1 from public.pledges where checkin_code !~ '^[A-HJ-KM-NP-Z2-9]{6}$'));
+select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
+insert into public.pledges (need_id, quantity) select id, 1 from public.needs where title = 'Travel-size toiletries';
+select pg_temp.ok('new pledges get a readable six-character code',
+  (select checkin_code ~ '^[A-HJ-KM-NP-Z2-9]{6}$' from public.pledges p join public.needs n on n.id = p.need_id
+   where n.title = 'Travel-size toiletries' and p.status = 'pledged'));
+select pg_temp.rejects('donors cannot choose their own code',
+  $$insert into public.pledges (need_id, quantity, checkin_code) select id, 1, 'AAAAAA' from public.needs where title = 'Travel-size toiletries'$$);
+reset role;
+create temp table toiletries_code as
+  select p.checkin_code as code from public.pledges p join public.needs n on n.id = p.need_id
+  where n.title = 'Travel-size toiletries' and p.status = 'pledged';
+grant select on toiletries_code to authenticated;
+select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
+select pg_temp.ok('staff can find a pledge to their organization by its code',
+  (select count(*) from public.pledges where checkin_code = (select code from toiletries_code)) = 1);
+reset role;
+select pg_temp.act_as('aaaaaaaa-0000-4000-8000-000000000001');
+select pg_temp.ok('other users cannot find a pledge by its code',
+  (select count(*) from public.pledges where checkin_code = (select code from toiletries_code)) = 0);
+reset role;
+select pg_temp.ok('codes are unique among pledges waiting for drop-off',
+  (select count(*) = count(distinct checkin_code) from public.pledges where status = 'pledged'));
+select pg_temp.rejects('two pending pledges cannot share a code',
+  $$update public.pledges set checkin_code = (select code from toiletries_code)
+    where status = 'pledged' and checkin_code <> (select code from toiletries_code)$$);

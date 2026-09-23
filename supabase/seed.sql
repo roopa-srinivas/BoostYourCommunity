@@ -52,3 +52,30 @@ values
   ('00000000-0000-4000-8000-000000000006', 'food', 'Granola bars',
    'Belongs to the pending organization, so donors should not see it.', 100, 'bars',
    date_trunc('hour', now()), date_trunc('hour', now()) + interval '3 days');
+
+-- Organization pages: hours and what each accepts.
+update public.organizations set
+  hours = 'Mon–Sat 10 am – 7 pm. Drop-offs at the side door on 20th St.',
+  accepts = 'Unopened canned and boxed food, bottled water, fresh produce that keeps a few days.',
+  does_not_accept = 'Homemade or opened food, glass jars, anything past its best-by date.'
+where id = '00000000-0000-4000-8000-000000000001';
+update public.organizations set
+  hours = 'Every day 8 am – 8 pm at the front desk.',
+  accepts = 'New socks and underwear, sealed travel-size toiletries, blankets.',
+  does_not_accept = 'Used underwear or socks, opened toiletries, large furniture.'
+where id = '00000000-0000-4000-8000-000000000002';
+update public.organizations set
+  hours = 'Open 24/7.',
+  accepts = 'Fresh fruit and vegetables, sealed snacks, labeled leftovers dated today.',
+  does_not_accept = 'Raw meat, alcohol, unlabeled containers.'
+where id = '00000000-0000-4000-8000-000000000003';
+update public.organizations set
+  hours = 'Weekdays 9 am – 5 pm.',
+  accepts = 'Clean warm clothing in adult sizes, new socks, cases of water.',
+  does_not_accept = 'Stained or torn clothing, children''s clothing (try Sunset Family Closet).'
+where id = '00000000-0000-4000-8000-000000000004';
+update public.organizations set
+  hours = 'Saturdays 10 am – 2 pm.',
+  accepts = 'Kids'' clothing in good condition, sizes newborn to youth XL.',
+  does_not_accept = 'Adult clothing, shoes with worn soles.'
+where id = '00000000-0000-4000-8000-000000000005';
