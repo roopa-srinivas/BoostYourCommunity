@@ -50,12 +50,7 @@ export default function StaffNeedScreen() {
   const mutationError = resolve.error ?? setStatus.error;
 
   return (
-    <Screen
-      refreshing={need.isRefetching || pledges.isRefetching}
-      onRefresh={() => {
-        need.refetch();
-        pledges.refetch();
-      }}>
+    <Screen onRefresh={() => Promise.all([need.refetch(), pledges.refetch()])}>
       <Stack.Screen options={{ title: lower(data.title) }} />
 
       <Card>

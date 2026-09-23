@@ -43,7 +43,7 @@ export default function AdminScreen() {
   const busyId = setStatus.isPending ? setStatus.variables?.organizationId : null;
 
   return (
-    <Screen refreshing={organizations.isRefetching} onRefresh={organizations.refetch}>
+    <Screen onRefresh={organizations.refetch}>
       <ThemedText type="small" themeColor="textSecondary">
         check that each organization is real before approving it: look it up, and call the phone number if you’re
         unsure. approved organizations appear to donors and can post needs.

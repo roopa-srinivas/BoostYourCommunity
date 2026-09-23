@@ -51,7 +51,6 @@ export default function GiveScreen() {
 
   return (
     <Screen
-      refreshing={needs.isRefetching}
       onRefresh={needs.refetch}
       // No header here, so handle the top safe area ourselves on every platform.
       contentInsetAdjustmentBehavior="never"

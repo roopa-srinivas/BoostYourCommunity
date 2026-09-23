@@ -45,10 +45,7 @@ export default function OrganizationPageScreen() {
   const website = org.website && !/^https?:\/\//i.test(org.website) ? `https://${org.website}` : org.website;
 
   return (
-    <Screen refreshing={organization.isRefetching || needs.isRefetching} onRefresh={() => {
-      organization.refetch();
-      needs.refetch();
-    }}>
+    <Screen onRefresh={() => Promise.all([organization.refetch(), needs.refetch()])}>
       <Stack.Screen options={{ title: '' }} />
 
       <View style={styles.hero}>
