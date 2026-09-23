@@ -309,8 +309,6 @@ export type Database = {
     }
     Functions: {
       cancel_pledge: { Args: { pledge_id: string }; Returns: undefined }
-      is_org_member: { Args: { org: string }; Returns: boolean }
-      is_org_owner: { Args: { org: string }; Returns: boolean }
       needs_near: {
         Args: {
           lat: number

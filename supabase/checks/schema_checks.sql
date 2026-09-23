@@ -128,3 +128,9 @@ update public.profiles set display_name = 'Ben';
 select pg_temp.ok('users can rename themselves, only themselves',
   (select string_agg(display_name, ',' order by display_name) from public.profiles) = 'Ana,Ben,Sam (staff)');
 reset role;
+
+-- API surface -----------------------------------------------------------------
+select pg_temp.ok('membership helpers are not exposed in the public API schema',
+  not exists (
+    select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+    where n.nspname = 'public' and p.proname in ('is_org_member', 'is_org_owner')));
