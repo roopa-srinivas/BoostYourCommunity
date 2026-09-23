@@ -1,4 +1,5 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useNeed, useSetNeedStatus } from '@/api/needs';
@@ -21,6 +22,8 @@ export default function StaffNeedScreen() {
   const pledges = useNeedPledges(id);
   const resolve = useResolvePledge();
   const setStatus = useSetNeedStatus();
+  // Read the clock once when the screen opens, not on every render.
+  const [now] = useState(() => Date.now());
 
   if (need.isPending) return <Loading />;
   if (!need.data) {
@@ -32,7 +35,9 @@ export default function StaffNeedScreen() {
   }
 
   const { data } = need;
-  const status = NEED_STATUS[data.status];
+  // Same wording as the organization tab: an open need whose window has passed is "ended".
+  const ended = data.status === 'open' && new Date(data.dropoff_ends_at).getTime() <= now;
+  const status = ended ? { label: 'ended', tone: 'neutral' as const } : NEED_STATUS[data.status];
   const all = pledges.data ?? [];
   const received = all.filter((p) => p.status === 'received').reduce((sum, p) => sum + p.quantity, 0);
   const expected = all.filter((p) => p.status === 'pledged');
@@ -70,6 +75,12 @@ export default function StaffNeedScreen() {
             label="edit"
             style={styles.action}
             onPress={() => router.push({ pathname: '/organization/need-form', params: { needId: data.id } })}
+          />
+          <Button
+            variant="secondary"
+            label="post again"
+            style={styles.action}
+            onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: data.id } })}
           />
           {data.status === 'open' ? (
             <Button variant="danger" label="close" style={styles.action} onPress={close} loading={setStatus.isPending} />

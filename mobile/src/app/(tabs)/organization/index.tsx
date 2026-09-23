@@ -36,6 +36,11 @@ export default function OrganizationScreen() {
           before it appears to donors.
         </ThemedText>
         <Button label="register an organization" onPress={() => router.push('/organization/register')} />
+        <Button
+          variant="secondary"
+          label="join with an invite code"
+          onPress={() => router.push('/organization/join')}
+        />
       </Screen>
     );
   }
@@ -109,6 +114,12 @@ export default function OrganizationScreen() {
                 edit your page
               </ThemedText>
             ) : null}
+            <ThemedText
+              type="link"
+              accessibilityRole="link"
+              onPress={() => router.push({ pathname: '/organization/team', params: { organizationId: organization.id } })}>
+              team
+            </ThemedText>
           </View>
         </>
       }
