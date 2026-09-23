@@ -24,6 +24,10 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>my pledges</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="checklist" md="checklist" />
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="community">
+        <NativeTabs.Trigger.Label>community</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="person.3.fill" md="groups" />
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="organization">
         <NativeTabs.Trigger.Label>organization</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="building.2.fill" md="domain" />

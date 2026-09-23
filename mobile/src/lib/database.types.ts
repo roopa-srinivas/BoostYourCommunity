@@ -309,6 +309,27 @@ export type Database = {
     }
     Functions: {
       cancel_pledge: { Args: { pledge_id: string }; Returns: undefined }
+      community_heat: {
+        Args: { days?: number; lat: number; lng: number; radius_m?: number }
+        Returns: {
+          donors: number
+          items_received: number
+          org_lat: number
+          org_lng: number
+          organization_id: string
+          organization_name: string
+        }[]
+      }
+      leaderboard_this_month: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          display_name: string
+          is_me: boolean
+          items_given: number
+          user_id: string
+        }[]
+      }
       needs_near: {
         Args: {
           lat: number

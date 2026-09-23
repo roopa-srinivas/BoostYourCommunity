@@ -1,16 +1,21 @@
-import { useState } from 'react';
+import { router } from 'expo-router';
+import { useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
+import { useFollowCounts } from '@/api/community';
 import { useMyPledges } from '@/api/pledges';
 import { useProfile, useUpdateDisplayName } from '@/api/profile';
+import { BadgeTile } from '@/components/badge-tile';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ErrorText, Loading } from '@/components/ui/message';
+import { ProgressBar } from '@/components/ui/progress-bar';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
-import { errorMessage } from '@/lib/format';
+import { computeBadges } from '@/lib/badges';
+import { errorMessage, formatQuantity } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/providers/auth-provider';
 
@@ -18,9 +23,20 @@ export default function ProfileScreen() {
   const { session } = useAuth();
   const profile = useProfile();
   const pledges = useMyPledges();
+  const followCounts = useFollowCounts();
   const updateName = useUpdateDisplayName();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
+
+  const badges = useMemo(
+    () =>
+      computeBadges(
+        (pledges.data ?? [])
+          .filter((p) => p.status === 'received' && p.resolved_at)
+          .map((p) => ({ quantity: p.quantity, resolvedAt: new Date(p.resolved_at!) })),
+      ),
+    [pledges.data],
+  );
 
   if (profile.isPending) return <Loading />;
 
@@ -64,6 +80,11 @@ export default function ProfileScreen() {
           <ThemedText type="small" themeColor="textSecondary">
             {session?.user.email}
           </ThemedText>
+          <ThemedText type="link" accessibilityRole="button" onPress={() => router.push('/people')}>
+            {followCounts.data
+              ? `${followCounts.data.followers} ${followCounts.data.followers === 1 ? 'follower' : 'followers'} · ${followCounts.data.following} following`
+              : ' '}
+          </ThemedText>
           <Button
             variant="secondary"
             label="change name"
@@ -80,6 +101,42 @@ export default function ProfileScreen() {
         <Stat value={receivedPledges.length} label={'drop-offs\nconfirmed'} />
         <Stat value={itemsDonated} label={'items\ndonated'} />
         <Stat value={upcoming} label={'upcoming\ndrop-offs'} />
+      </View>
+
+      <View style={styles.section}>
+        <ThemedText type="sectionTitle">badges</ThemedText>
+        {badges.next ? (
+          <Card style={styles.next}>
+            <ThemedText type="small" themeColor="textSecondary">
+              next: <ThemedText type="smallBold">{badges.next.title}</ThemedText>
+            </ThemedText>
+            <ProgressBar
+              value={badges.total / badges.next.milestone}
+              accessibilityLabel={`${badges.total} of ${badges.next.milestone} items`}
+            />
+            <ThemedText type="small" themeColor="textSecondary">
+              {formatQuantity(badges.next.milestone - badges.total, 'items')} to go. only confirmed drop-offs count.
+            </ThemedText>
+          </Card>
+        ) : null}
+        {badges.earned.length === 0 ? (
+          <ThemedText type="small" themeColor="textSecondary">
+            your first badge comes with your first confirmed drop-off.
+          </ThemedText>
+        ) : (
+          <View style={styles.grid}>
+            {[...badges.earned].reverse().map((badge) => (
+              <View key={badge.milestone} style={styles.gridItem}>
+                <BadgeTile badge={badge} />
+              </View>
+            ))}
+            {badges.next ? (
+              <View style={styles.gridItem}>
+                <BadgeTile badge={badges.next} />
+              </View>
+            ) : null}
+          </View>
+        )}
       </View>
 
       <Button variant="secondary" label="sign out" onPress={() => supabase.auth.signOut()} />
@@ -104,6 +161,9 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: Spacing.two },
   flex: { flex: 1 },
   start: { alignSelf: 'flex-start', marginTop: Spacing.one },
+  next: { gap: Spacing.two },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
+  gridItem: { width: '31%' },
   stat: { flex: 1, alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: Spacing.three },
   statLabel: { textAlign: 'center', fontSize: 13, lineHeight: 17 },
 });

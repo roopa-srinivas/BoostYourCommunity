@@ -46,7 +46,13 @@
           "locationWhenInUsePermission": "Boost Your Community uses your location to show donation needs near you."
         }
       ],
-      "expo-font"
+      "expo-font",
+      [
+        "expo-notifications",
+        {
+          "color": "#2F5D46"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

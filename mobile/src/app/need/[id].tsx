@@ -1,6 +1,6 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { useNeed } from '@/api/needs';
 import { useCreatePledge } from '@/api/pledges';
@@ -16,6 +16,7 @@ import { Spacing } from '@/constants/theme';
 import { openDirections } from '@/lib/directions';
 import { errorMessage, formatQuantity, formatWindow, lower } from '@/lib/format';
 import { categoryLabel } from '@/lib/labels';
+import { scheduleDropoffReminder } from '@/lib/reminders';
 
 export default function NeedScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -42,8 +43,15 @@ export default function NeedScreen() {
 
   async function pledge() {
     try {
-      await createPledge.mutateAsync({ needId: data.id, quantity: pledgeQuantity });
+      const pledgeId = await createPledge.mutateAsync({ needId: data.id, quantity: pledgeQuantity });
       setPledged(pledgeQuantity);
+      void scheduleDropoffReminder(pledgeId, pledgeQuantity, {
+        title: data.title,
+        unit: data.unit,
+        organizationName: organization?.name ?? 'the organization',
+        startsAt: new Date(data.dropoff_starts_at),
+        endsAt: new Date(data.dropoff_ends_at),
+      });
     } catch {
       // Shown below from createPledge.error.
     }
@@ -99,6 +107,7 @@ export default function NeedScreen() {
           <ThemedText>
             you pledged {formatQuantity(pledged, data.unit)}. please drop them off at {lower(organization?.name)},{' '}
             {window}. the staff will confirm when they arrive.
+            {Platform.OS === 'web' ? '' : ' we’ll send you a reminder too.'}
           </ThemedText>
           <Button label="see my pledges" onPress={() => router.dismissTo('/pledges')} />
         </Card>

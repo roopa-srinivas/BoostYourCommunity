@@ -56,6 +56,7 @@ function RootStack() {
         <Stack.Screen name="organization/register" options={{ title: 'register your organization' }} />
         <Stack.Screen name="organization/need-form" options={{ title: 'need' }} />
         <Stack.Screen name="organization/need/[id]" options={{ title: 'need' }} />
+        <Stack.Screen name="people" options={{ title: 'find people' }} />
       </Stack.Protected>
       <Stack.Protected guard={!session}>
         <Stack.Screen name="sign-in" options={{ headerShown: false }} />
