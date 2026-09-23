@@ -93,24 +93,34 @@ export function useResolvePledge() {
 }
 
 /**
- * The pledge with this check-in code, for staff at drop-off. Row level
- * security only returns pledges to the staff member's own organizations.
- * Codes are only unique among pending pledges, so prefer a pending one.
+ * The pledge with this check-in code, for staff at drop-off: only pledges to
+ * organizations where the signed-in user is staff. (Row level security also
+ * lets donors see their own pledges; those must not show up here, or staff
+ * could "find" a pledge they can't confirm.) Codes are only unique among
+ * pending pledges, so prefer a pending one.
  */
 export function usePledgeByCode(code: string | null) {
+  const userId = useUserId();
   return useQuery({
-    queryKey: ['pledges', 'code', code],
-    enabled: !!code,
+    queryKey: ['pledges', 'code', code, userId],
+    enabled: !!code && !!userId,
     queryFn: async () => {
+      const memberships = await supabase.from('organization_members').select('organization_id').eq('user_id', userId);
+      if (memberships.error) throw memberships.error;
+      const staffOf = memberships.data.map((m) => m.organization_id);
+      if (staffOf.length === 0) return null;
+
       const { data, error } = await supabase
         .from('pledges')
         .select(
-          'id, quantity, status, checkin_code, created_at, donor:profiles!pledges_donor_id_fkey(display_name), need:needs(id, title, unit, dropoff_starts_at, dropoff_ends_at, organization:organizations(id, name))',
+          'id, quantity, status, checkin_code, created_at, donor:profiles!pledges_donor_id_fkey(display_name), need:needs!inner(id, title, unit, organization_id, dropoff_starts_at, dropoff_ends_at, organization:organizations(id, name))',
         )
         .eq('checkin_code', code!)
+        .in('need.organization_id', staffOf)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data.find((p) => p.status === 'pledged') ?? data[0] ?? null;
+      const atMyOrganizations = data.filter((p) => p.need !== null);
+      return atMyOrganizations.find((p) => p.status === 'pledged') ?? atMyOrganizations[0] ?? null;
     },
   });
 }
