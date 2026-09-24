@@ -87,3 +87,40 @@ export function useUpdateOrganizationPage() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['organizations'] }),
   });
 }
+
+/** Ids of the organizations I follow. */
+export function useFollowedOrganizationIds() {
+  const userId = useUserId();
+  return useQuery({
+    queryKey: ['organization-follows', userId],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error } = await supabase.from('organization_follows').select('organization_id');
+      if (error) throw error;
+      return new Set(data.map((row) => row.organization_id));
+    },
+  });
+}
+
+export function useSetFollowingOrganization() {
+  const userId = useUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ organizationId, follow }: { organizationId: string; follow: boolean }) => {
+      const { error } = follow
+        ? await supabase.from('organization_follows').insert({ organization_id: organizationId })
+        : await supabase
+            .from('organization_follows')
+            .delete()
+            .eq('user_id', userId)
+            .eq('organization_id', organizationId);
+      // Following twice (say, from two devices) already has the outcome we want.
+      if (error && error.code !== '23505') throw error;
+    },
+    onSuccess: () =>
+      Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['organization-follows'] }),
+        queryClient.invalidateQueries({ queryKey: ['needs', 'followed'] }),
+      ]),
+  });
+}

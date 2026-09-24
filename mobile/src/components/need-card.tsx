@@ -9,7 +9,22 @@ import { Spacing } from '@/constants/theme';
 import { formatDistance, formatQuantity, formatWindow, lower } from '@/lib/format';
 import { formatClosesIn, isClosingSoon } from '@/lib/urgency';
 
-export function NeedCard({ need, onPress }: { need: NearbyNeed; onPress: () => void }) {
+export type NeedCardData = Pick<
+  NearbyNeed,
+  | 'category'
+  | 'title'
+  | 'organization_name'
+  | 'unit'
+  | 'quantity_needed'
+  | 'quantity_remaining'
+  | 'dropoff_starts_at'
+  | 'dropoff_ends_at'
+> & {
+  /** Left out when it isn't known (needs from followed places further away). */
+  distance_m?: number | null;
+};
+
+export function NeedCard({ need, onPress }: { need: NeedCardData; onPress: () => void }) {
   const pledged = need.quantity_needed - need.quantity_remaining;
   return (
     <Card onPress={onPress} style={styles.card}>
@@ -19,9 +34,11 @@ export function NeedCard({ need, onPress }: { need: NearbyNeed; onPress: () => v
           <ThemedText type="bold" style={styles.title} numberOfLines={2}>
             {lower(need.title)}
           </ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            {formatDistance(need.distance_m)}
-          </ThemedText>
+          {need.distance_m != null ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              {formatDistance(need.distance_m)}
+            </ThemedText>
+          ) : null}
         </View>
         <ThemedText type="small" themeColor="textSecondary" numberOfLines={1}>
           {lower(need.organization_name)}

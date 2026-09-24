@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Linking, StyleSheet, View } from 'react-native';
 
 import { useOrganizationNeeds } from '@/api/needs';
-import { useOrganization } from '@/api/organizations';
+import { useFollowedOrganizationIds, useOrganization, useSetFollowingOrganization } from '@/api/organizations';
 import { CategoryIcon } from '@/components/category-icon';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,8 @@ export default function OrganizationPageScreen() {
   const theme = useTheme();
   const organization = useOrganization(id);
   const needs = useOrganizationNeeds(id);
+  const followedIds = useFollowedOrganizationIds();
+  const setFollowing = useSetFollowingOrganization();
   // Read the clock once when the page opens, not on every render.
   const [now] = useState(() => Date.now());
 
@@ -42,6 +44,7 @@ export default function OrganizationPageScreen() {
   const openNeeds = (needs.data ?? []).filter(
     (n) => n.status === 'open' && new Date(n.dropoff_ends_at).getTime() > now && n.quantity_committed < n.quantity_needed,
   );
+  const isFollowing = followedIds.data?.has(org.id) ?? false;
   const website = org.website && !/^https?:\/\//i.test(org.website) ? `https://${org.website}` : org.website;
 
   return (
@@ -55,6 +58,24 @@ export default function OrganizationPageScreen() {
         <ThemedText type="subtitle">{lower(org.name)}</ThemedText>
         {org.description ? <ThemedText themeColor="textSecondary">{lower(org.description)}</ThemedText> : null}
       </View>
+
+      {org.status === 'approved' ? (
+        <View style={styles.follow}>
+          <Button
+            variant={isFollowing ? 'secondary' : 'primary'}
+            label={isFollowing ? 'following ✓' : 'follow'}
+            accessibilityHint={isFollowing ? 'stops showing their needs first on give' : 'shows their needs first on give'}
+            loading={setFollowing.isPending || followedIds.isPending}
+            onPress={() => setFollowing.mutate({ organizationId: org.id, follow: !isFollowing })}
+          />
+          <ThemedText type="small" themeColor="textSecondary" style={styles.center}>
+            {isFollowing
+              ? 'their new needs show up first on give. tap to unfollow.'
+              : 'follow to see their new needs first on give.'}
+          </ThemedText>
+          {setFollowing.error ? <ErrorText>{errorMessage(setFollowing.error)}</ErrorText> : null}
+        </View>
+      ) : null}
 
       <Card style={styles.card}>
         <InfoRow label="address" value={lower(org.address)} />
@@ -141,6 +162,8 @@ function InfoRow({ label, value, onPress }: { label: string; value: string; onPr
 
 const styles = StyleSheet.create({
   hero: { gap: Spacing.one },
+  follow: { gap: Spacing.one },
+  center: { textAlign: 'center' },
   card: { gap: Spacing.two },
   infoRow: { flexDirection: 'row', gap: Spacing.three },
   infoLabel: { width: 64 },

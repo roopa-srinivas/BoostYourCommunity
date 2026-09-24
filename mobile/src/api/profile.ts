@@ -28,6 +28,19 @@ export function useUpdateDisplayName() {
   });
 }
 
+/** Keep my monthly total off the leaderboards of people who follow me. */
+export function useSetHideFromLeaderboard() {
+  const userId = useUserId();
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (hide: boolean) => {
+      const { error } = await supabase.from('profiles').update({ hide_from_leaderboard: hide }).eq('id', userId);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['profile'] }),
+  });
+}
+
 /** Permanently deletes the signed-in user's account, then signs out on this device. */
 export function useDeleteAccount() {
   return useMutation({
