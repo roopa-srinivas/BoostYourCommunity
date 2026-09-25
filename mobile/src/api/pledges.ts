@@ -23,7 +23,7 @@ export function useMyPledges() {
       const { data, error } = await supabase
         .from('pledges')
         .select(
-          'id, quantity, status, created_at, resolved_at, checkin_code, need:needs(id, title, unit, dropoff_starts_at, dropoff_ends_at, organization:organizations(name, address))',
+          'id, quantity, status, created_at, resolved_at, checkin_code, need:needs(id, title, unit, category, dropoff_starts_at, dropoff_ends_at, organization:organizations(id, name, address))',
         )
         .eq('donor_id', userId)
         .order('created_at', { ascending: false });

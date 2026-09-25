@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import type { Coordinates } from '@/api/needs';
-import type { OrganizationKind } from '@/lib/labels';
+import type { NeedCategory, OrganizationKind } from '@/lib/labels';
 import { supabase } from '@/lib/supabase';
 import { useUserId } from '@/providers/auth-provider';
 
@@ -122,5 +122,34 @@ export function useSetFollowingOrganization() {
         queryClient.invalidateQueries({ queryKey: ['organization-follows'] }),
         queryClient.invalidateQueries({ queryKey: ['needs', 'followed'] }),
       ]),
+  });
+}
+
+export type OrganizationStats = {
+  days: number;
+  items_received: number;
+  dropoffs: number;
+  donors: number;
+  arrived: number;
+  no_shows: number;
+  expected_pledges: number;
+  expected_items: number;
+  followers: number;
+  needs_posted: number;
+  needs_filled: number;
+  /** Most asked-for first. `received` counts up to what was asked for. */
+  categories: { category: NeedCategory; needed: number; received: number; needs: number }[];
+};
+
+/** Dashboard numbers for the last `days` days. Staff only. */
+export function useOrganizationStats(organizationId: string | undefined, days: number) {
+  return useQuery({
+    queryKey: ['organizations', 'stats', organizationId, days],
+    enabled: !!organizationId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('organization_stats', { organization_id: organizationId!, days });
+      if (error) throw error;
+      return data as unknown as OrganizationStats;
+    },
   });
 }

@@ -519,6 +519,10 @@ export type Database = {
         }[]
       }
       new_checkin_code: { Args: never; Returns: string }
+      organization_stats: {
+        Args: { days?: number; organization_id: string }
+        Returns: Json
+      }
       post_next_repeating_needs: { Args: never; Returns: number }
       resolve_pledge: {
         Args: {
