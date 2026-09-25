@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>A need near you · Boost Your Community</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,700&family=Fraunces:opsz,wght@9..144,600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="legal.css">
+  <style>
+    main { padding-top: 56px; }
+    .muted { color: var(--muted); }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 22px; padding: 18px 20px; margin: 20px 0; }
+    .card p:last-child { margin-bottom: 0; }
+    .bar { height: 10px; border-radius: 999px; background: var(--border); overflow: hidden; margin: 10px 0 12px; }
+    .bar > div { height: 100%; background: var(--tint); border-radius: 999px; }
+    .accent { color: #B4502B; font-weight: 700; }
+    @media (prefers-color-scheme: dark) { .accent { color: #E08A63; } }
+    .button {
+      display: inline-block; background: var(--tint); color: var(--bg); text-decoration: none; font-weight: 700;
+      padding: 12px 22px; border-radius: 999px;
+    }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <p class="muted">boost your community</p>
+  <p id="status" class="muted">loading…</p>
+
+  <article id="need" hidden>
+    <p class="muted" id="org-line"></p>
+    <h1 id="title"></h1>
+    <p class="muted" id="details"></p>
+
+    <div class="card">
+      <p><strong id="remaining"></strong> still needed · <span id="pledged"></span> pledged so far</p>
+      <div class="bar" role="presentation"><div id="bar"></div></div>
+      <p class="muted" id="window"></p>
+      <p class="accent" id="closing" hidden></p>
+    </div>
+
+    <div class="card">
+      <p><strong id="org-name"></strong></p>
+      <p class="muted" id="address"></p>
+      <p class="muted" id="hours" hidden></p>
+      <p><a class="button" id="directions" target="_blank" rel="noopener">get directions</a></p>
+    </div>
+
+    <p id="how">to pledge, open this need in the Boost Your Community app. you’ll get a check-in code to show when you drop off.</p>
+  </article>
+
+  <footer><a href="index.html">about Boost Your Community</a> · <a href="privacy.html">privacy</a></footer>
+</main>
+<script>
+  // The public project URL and publishable key (the same ones the app ships with).
+  // They only allow what row level security lets signed-out visitors see:
+  // open needs from approved organizations.
+  const SUPABASE_URL = 'https://rzijjjaazapmwbzhsukx.supabase.co';
+  const PUBLISHABLE_KEY = 'sb_publishable_iw22x2-Lu0f6UGIGDSx6Mg_HdXKks2t';
+
+  const $ = (id) => document.getElementById(id);
+  const lower = (s) => (s || '').toLowerCase();
+  const status = $('status');
+
+  function unitFor(n, unit) {
+    // "1 packs" → "1 pack", "1 boxes" → "1 box", like the app.
+    if (n !== 1) return unit;
+    if (/(sh|ch|x|ss)es$/i.test(unit)) return unit.slice(0, -2);
+    if (/[^s]s$/i.test(unit)) return unit.slice(0, -1);
+    return unit;
+  }
+
+  function formatWindow(starts, ends, timeZone) {
+    const day = new Intl.DateTimeFormat('en-US', { timeZone, weekday: 'short', month: 'short', day: 'numeric' });
+    const time = (d) => {
+      const parts = new Intl.DateTimeFormat('en-US', { timeZone, hour: 'numeric', minute: '2-digit' }).format(d);
+      return parts.replace(':00', '').replace(/\s?([AP])M/, (_, x) => ' ' + x.toLowerCase() + 'm');
+    };
+    const sameDay = day.format(starts) === day.format(ends);
+    return sameDay
+      ? `${lower(day.format(starts))}, ${time(starts)}–${time(ends)}`
+      : `${lower(day.format(starts))}, ${time(starts)} to ${lower(day.format(ends))}, ${time(ends)}`;
+  }
+
+  function fail(message) {
+    status.textContent = message;
+  }
+
+  async function load() {
+    const id = decodeURIComponent(location.hash.slice(1)).trim().toLowerCase();
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(id)) {
+      fail('this link doesn’t point to a need. ask whoever sent it for a new link.');
+      return;
+    }
+    const select = 'title,details,unit,quantity_needed,quantity_committed,status,dropoff_starts_at,dropoff_ends_at,' +
+      'organization:organizations(name,address,hours,timezone)';
+    let rows;
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/needs?id=eq.${id}&select=${select}`, {
+        headers: { apikey: PUBLISHABLE_KEY },
+      });
+      if (!response.ok) throw new Error(String(response.status));
+      rows = await response.json();
+    } catch {
+      fail('couldn’t load this need. check your connection and refresh.');
+      return;
+    }
+    const need = rows[0];
+    if (!need || !need.organization) {
+      fail('this need isn’t available anymore.');
+      return;
+    }
+
+    const org = need.organization;
+    const starts = new Date(need.dropoff_starts_at);
+    const ends = new Date(need.dropoff_ends_at);
+    const remaining = Math.max(0, need.quantity_needed - need.quantity_committed);
+    const open = need.status === 'open' && ends > new Date() && remaining > 0;
+
+    document.title = `${need.title} · ${org.name}`;
+    $('org-line').textContent = `${lower(org.name)} needs`;
+    $('title').textContent = lower(need.title);
+    $('details').textContent = lower(need.details);
+    $('remaining').textContent = `${remaining} ${lower(unitFor(remaining, need.unit))}`;
+    $('pledged').textContent = String(need.quantity_committed);
+    $('bar').style.width = `${Math.min(100, (need.quantity_committed / need.quantity_needed) * 100)}%`;
+    $('window').textContent = `drop off ${formatWindow(starts, ends, org.timezone)}`;
+    $('org-name').textContent = lower(org.name);
+    $('address').textContent = lower(org.address);
+    if (org.hours) {
+      $('hours').textContent = `hours: ${lower(org.hours)}`;
+      $('hours').hidden = false;
+    }
+    $('directions').href = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(org.address)}`;
+
+    const hoursLeft = (ends - new Date()) / 3_600_000;
+    if (open && hoursLeft <= 24) {
+      $('closing').textContent = hoursLeft < 1 ? 'closes in under an hour' : `closes in ${Math.floor(hoursLeft)} hours`;
+      $('closing').hidden = false;
+    }
+    if (!open) {
+      $('how').textContent = remaining <= 0
+        ? 'this need is fully pledged. thank you, everyone!'
+        : 'this need is no longer taking pledges.';
+    }
+
+    status.hidden = true;
+    $('need').hidden = false;
+  }
+
+  load();
+</script>
+</body>
+</html>

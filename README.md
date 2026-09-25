@@ -20,7 +20,7 @@ A community-driven donation platform connecting local donors with homeless shelt
 | `supabase/migrations/` | The database schema: organizations, staff, needs, pledges and follows, with access rules. |
 | `supabase/seed.sql` | Fictional sample organizations and needs for development and demos. |
 | `supabase/checks/` | Behavior checks for the schema's rules (`./supabase/checks/run.sh`). |
-| `privacy.html`, `terms.html`, `checkin.html` | Privacy policy, terms of use, and the page a check-in QR code opens in a phone's regular camera; served by GitHub Pages. |
+| `privacy.html`, `terms.html`, `checkin.html`, `need.html` | Privacy policy, terms of use, the page a check-in QR code opens in a phone's regular camera, and the public page a shared need link opens (for friends without the app); served by GitHub Pages. |
 
 ## How the app works
 1. An approved organization posts a specific need, like "40 pairs of new socks, drop off Tue 4-7pm".

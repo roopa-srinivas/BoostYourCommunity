@@ -132,3 +132,49 @@ export function useStopRepeating() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['needs'] }),
   });
 }
+
+/**
+ * Open needs from the organizations I follow, closing soonest first, wherever
+ * they are (not limited to the nearby radius). Same shape as nearby needs, with
+ * the distance when it's known.
+ */
+export function useFollowedNeeds(organizationIds: Set<string> | undefined, category: NeedCategory | null) {
+  const ids = [...(organizationIds ?? [])].sort();
+  return useQuery({
+    queryKey: ['needs', 'followed', ids, category],
+    enabled: ids.length > 0,
+    queryFn: async () => {
+      let query = supabase
+        .from('needs')
+        .select(
+          'id, organization_id, category, title, details, unit, quantity_needed, quantity_committed, dropoff_starts_at, dropoff_ends_at, organization:organizations!inner(name, address, status)',
+        )
+        .in('organization_id', ids)
+        .eq('status', 'open')
+        .eq('organization.status', 'approved')
+        .gt('dropoff_ends_at', new Date().toISOString())
+        .order('dropoff_ends_at', { ascending: true });
+      if (category) query = query.eq('category', category);
+      const { data, error } = await query;
+      if (error) throw error;
+      return data
+        .filter((n) => n.quantity_committed < n.quantity_needed)
+        .map((n) => ({
+          need_id: n.id,
+          organization_id: n.organization_id,
+          organization_name: n.organization.name,
+          address: n.organization.address,
+          category: n.category,
+          title: n.title,
+          details: n.details ?? '',
+          unit: n.unit,
+          quantity_needed: n.quantity_needed,
+          quantity_remaining: n.quantity_needed - n.quantity_committed,
+          dropoff_starts_at: n.dropoff_starts_at,
+          dropoff_ends_at: n.dropoff_ends_at,
+        }));
+    },
+  });
+}
+
+export type FollowedNeed = NonNullable<ReturnType<typeof useFollowedNeeds>['data']>[number];

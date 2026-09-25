@@ -1,11 +1,11 @@
 import { router } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Switch, View } from 'react-native';
 
 import { useIsAdmin, useOrganizationsToReview } from '@/api/admin';
 import { useFollowCounts } from '@/api/community';
 import { useMyPledges } from '@/api/pledges';
-import { useDeleteAccount, useProfile, useUpdateDisplayName } from '@/api/profile';
+import { useDeleteAccount, useProfile, useSetHideFromLeaderboard, useUpdateDisplayName } from '@/api/profile';
 import { BadgeTile } from '@/components/badge-tile';
 import { LegalLinks } from '@/components/legal-links';
 import { ThemedText } from '@/components/themed-text';
@@ -16,6 +16,7 @@ import { ProgressBar } from '@/components/ui/progress-bar';
 import { Screen } from '@/components/ui/screen';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { computeBadges } from '@/lib/badges';
 import { confirm } from '@/lib/confirm';
 import { errorMessage, formatQuantity } from '@/lib/format';
@@ -31,6 +32,8 @@ export default function ProfileScreen() {
   const toReview = useOrganizationsToReview(isAdmin.data === true);
   const deleteAccount = useDeleteAccount();
   const updateName = useUpdateDisplayName();
+  const setHidden = useSetHideFromLeaderboard();
+  const theme = useTheme();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
 
@@ -167,6 +170,25 @@ export default function ProfileScreen() {
         </Card>
       ) : null}
 
+      <Card style={styles.setting}>
+        <View style={styles.settingText}>
+          <ThemedText type="bold">show my total to followers</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            {profile.data?.hide_from_leaderboard
+              ? 'hidden: people who follow you won’t see your monthly total. you still see it.'
+              : 'people who follow you see how many items you gave this month.'}
+          </ThemedText>
+          {setHidden.error ? <ErrorText>{errorMessage(setHidden.error)}</ErrorText> : null}
+        </View>
+        <Switch
+          accessibilityLabel="show my monthly total to followers"
+          value={!profile.data?.hide_from_leaderboard}
+          disabled={setHidden.isPending || !profile.data}
+          onValueChange={(show) => setHidden.mutate(!show)}
+          trackColor={{ true: theme.tint, false: theme.backgroundSelected }}
+        />
+      </Card>
+
       <Button variant="secondary" label="sign out" onPress={() => supabase.auth.signOut()} />
 
       <View style={styles.footer}>
@@ -202,6 +224,8 @@ const styles = StyleSheet.create({
   start: { alignSelf: 'flex-start', marginTop: Spacing.one },
   next: { gap: Spacing.two },
   adminCard: { gap: Spacing.half },
+  setting: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
+  settingText: { flex: 1, gap: Spacing.half },
   footer: { gap: Spacing.three, marginTop: Spacing.four },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   gridItem: { width: '31%' },

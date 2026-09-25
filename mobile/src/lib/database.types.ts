@@ -191,6 +191,39 @@ export type Database = {
           },
         ]
       }
+      organization_follows: {
+        Row: {
+          created_at: string
+          organization_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          organization_id: string
+          user_id?: string
+        }
+        Update: {
+          created_at?: string
+          organization_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organization_follows_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "organization_follows_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organization_invites: {
         Row: {
           code: string
@@ -407,18 +440,21 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           display_name: string
+          hide_from_leaderboard: boolean
           id: string
         }
         Insert: {
           avatar_url?: string | null
           created_at?: string
           display_name: string
+          hide_from_leaderboard?: boolean
           id: string
         }
         Update: {
           avatar_url?: string | null
           created_at?: string
           display_name?: string
+          hide_from_leaderboard?: boolean
           id?: string
         }
         Relationships: []

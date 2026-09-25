@@ -180,6 +180,26 @@ select pg_temp.ok('heat map totals confirmed items per organization',
 select pg_temp.ok('heat map leaves out pending organizations',
   not exists (select 1 from public.community_heat(37.77, -122.44, 20000) where organization_name = 'Haight Street Outreach'));
 reset role;
+-- Hiding from leaderboards: Fay follows Eve, who has 5 confirmed this month.
+select pg_temp.act_as('eeeeeeee-0000-4000-8000-000000000005');
+update public.profiles set hide_from_leaderboard = true where id = auth.uid();
+select pg_temp.ok('hiding still shows me my own total',
+  (select items_given from public.leaderboard_this_month() where is_me) = 5);
+reset role;
+select pg_temp.act_as('ffffffff-0000-4000-8000-000000000006');
+select pg_temp.ok('followers no longer see a hidden total',
+  (select string_agg(display_name, ',') from public.leaderboard_this_month()) = 'Fay');
+update public.profiles set hide_from_leaderboard = false where id = 'eeeeeeee-0000-4000-8000-000000000005';
+reset role;
+select pg_temp.ok('nobody can unhide someone else',
+  (select hide_from_leaderboard from public.profiles where id = 'eeeeeeee-0000-4000-8000-000000000005'));
+select pg_temp.act_as('eeeeeeee-0000-4000-8000-000000000005');
+update public.profiles set hide_from_leaderboard = false where id = auth.uid();
+reset role;
+select pg_temp.act_as('ffffffff-0000-4000-8000-000000000006');
+select pg_temp.ok('showing it again puts it back on followers'' leaderboards',
+  (select items_given from public.leaderboard_this_month() where display_name = 'Eve') = 5);
+reset role;
 -- Backdate Eve's confirmation to 40 days ago: outside the 30-day heat window
 -- and outside this month's leaderboard.
 update public.pledges set resolved_at = now() - interval '40 days'
@@ -500,3 +520,29 @@ select pg_temp.ok('changing the rule moves its starting point to that occurrence
   (select repeat_anchor = dropoff_starts_at and repeat_interval = 2 from public.needs where title = 'Rule edit'));
 select pg_temp.rejects('weekdays outside 0–6 are rejected', $$update public.needs set repeat_weekdays = '{1,7}' where title = 'Rule edit'$$);
 select pg_temp.rejects('an interval of 0 is rejected', $$update public.needs set repeat_interval = 0 where title = 'Rule edit'$$);
+
+-- Following organizations ---------------------------------------------------------------------
+select pg_temp.act_as('aaaaaaaa-0000-4000-8000-000000000001');
+insert into public.organization_follows (organization_id) values ('00000000-0000-4000-8000-000000000002');
+select pg_temp.ok('a donor can follow an approved organization',
+  (select count(*) from public.organization_follows) = 1);
+select pg_temp.rejects('following the same organization twice is rejected',
+  $$insert into public.organization_follows (organization_id) values ('00000000-0000-4000-8000-000000000002')$$);
+select pg_temp.rejects('cannot follow a pending organization',
+  $$insert into public.organization_follows (organization_id) values ('00000000-0000-4000-8000-000000000006')$$);
+select pg_temp.rejects('cannot follow on someone else''s behalf',
+  $$insert into public.organization_follows (user_id, organization_id)
+    values ('bbbbbbbb-0000-4000-8000-000000000002', '00000000-0000-4000-8000-000000000001')$$);
+reset role;
+select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
+select pg_temp.ok('who follows an organization is private', (select count(*) from public.organization_follows) = 0);
+delete from public.organization_follows;
+reset role;
+select pg_temp.act_as(null);
+select pg_temp.rejects('signed-out visitors cannot read follows', 'select 1/(count(*)-count(*)) from public.organization_follows');
+reset role;
+select pg_temp.ok('someone else''s delete leaves the follow in place', (select count(*) from public.organization_follows) = 1);
+select pg_temp.act_as('aaaaaaaa-0000-4000-8000-000000000001');
+delete from public.organization_follows where organization_id = '00000000-0000-4000-8000-000000000002';
+select pg_temp.ok('a donor can unfollow', (select count(*) from public.organization_follows) = 0);
+reset role;

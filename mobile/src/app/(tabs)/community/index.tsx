@@ -2,7 +2,8 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { HEAT_WINDOW_DAYS, useCommunityHeat, useLeaderboard } from '@/api/community';
+import { HEAT_WINDOW_DAYS, useCommunityHeat, useFollowCounts, useLeaderboard } from '@/api/community';
+import { useProfile } from '@/api/profile';
 import { Avatar } from '@/components/avatar';
 import { HeatMap } from '@/components/heat-map';
 import { ThemedText } from '@/components/themed-text';
@@ -40,8 +41,12 @@ export default function CommunityScreen() {
 
 function Leaderboard({ query }: { query: ReturnType<typeof useLeaderboard> }) {
   const theme = useTheme();
+  const followCounts = useFollowCounts();
+  const profile = useProfile();
   const rows = query.data ?? [];
-  const followsSomeone = rows.length > 1;
+  const followsSomeone = (followCounts.data?.following ?? 0) > 0;
+  // People can hide their totals, so following someone doesn't mean seeing them here.
+  const everyoneHidden = followsSomeone && rows.length === 1;
 
   return (
     <View style={styles.section}>
@@ -73,7 +78,17 @@ function Leaderboard({ query }: { query: ReturnType<typeof useLeaderboard> }) {
               </ThemedText>
             </View>
           ))}
-          {!followsSomeone ? (
+          {profile.data?.hide_from_leaderboard ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              your total is hidden from your followers. you can change this in profile.
+            </ThemedText>
+          ) : null}
+          {everyoneHidden ? (
+            <ThemedText type="small" themeColor="textSecondary">
+              the people you follow keep their totals private.
+            </ThemedText>
+          ) : null}
+          {!followsSomeone && !followCounts.isPending ? (
             <EmptyState
               title="it’s just you so far"
               body="follow friends to see how you’re all giving this month. only confirmed drop-offs count."
@@ -81,7 +96,7 @@ function Leaderboard({ query }: { query: ReturnType<typeof useLeaderboard> }) {
           ) : null}
         </Card>
       )}
-      {!query.isPending && !followsSomeone ? (
+      {!query.isPending && !followCounts.isPending && !followsSomeone ? (
         <Button variant="secondary" label="find people to follow" onPress={() => router.push('/people')} />
       ) : null}
     </View>

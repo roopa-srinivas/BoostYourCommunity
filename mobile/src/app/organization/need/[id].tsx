@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { useNeed, useSetNeedStatus, useStopRepeating } from '@/api/needs';
 import { useNeedPledges, useResolvePledge } from '@/api/pledges';
+import { ShareNeedButton } from '@/components/share-need-button';
 import { ThemedText } from '@/components/themed-text';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -99,6 +100,21 @@ export default function StaffNeedScreen() {
           style={styles.fullWidth}
           onPress={() => router.push({ pathname: '/organization/need-form', params: { copyFrom: data.id } })}
         />
+        {data.status === 'open' && !ended && data.quantity_committed < data.quantity_needed ? (
+          <ShareNeedButton
+            need={{
+              id: data.id,
+              title: data.title,
+              unit: data.unit,
+              remaining: data.quantity_needed - data.quantity_committed,
+              organizationName: data.organization?.name ?? '',
+              startsAt: data.dropoff_starts_at,
+              endsAt: data.dropoff_ends_at,
+            }}
+            label="share this need"
+            style={styles.fullWidth}
+          />
+        ) : null}
         {rule ? (
           <ThemedText type="small" themeColor="textSecondary" style={styles.repeat}>
             repeats {describeRepeat(rule, new Date(data.dropoff_starts_at))} ·{' '}

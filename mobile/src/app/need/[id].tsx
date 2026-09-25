@@ -5,6 +5,7 @@ import { Platform, StyleSheet, View } from 'react-native';
 import { useNeed } from '@/api/needs';
 import { useCreatePledge } from '@/api/pledges';
 import { CategoryIcon } from '@/components/category-icon';
+import { ShareNeedButton } from '@/components/share-need-button';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -47,6 +48,15 @@ export default function NeedScreen() {
   const closingSoon = isClosingSoon(data.dropoff_ends_at);
   const rule = ruleFromNeed(data);
   const acceptingPledges = data.status === 'open' && new Date(data.dropoff_ends_at) > new Date() && remaining > 0;
+  const shareable = {
+    id: data.id,
+    title: data.title,
+    unit: data.unit,
+    remaining: remaining - (pledged?.quantity ?? 0),
+    organizationName: organization?.name ?? '',
+    startsAt: data.dropoff_starts_at,
+    endsAt: data.dropoff_ends_at,
+  };
 
   async function pledge() {
     try {
@@ -151,6 +161,7 @@ export default function NeedScreen() {
             </ThemedText>
           </View>
           <Button label="see my pledges" onPress={() => router.dismissTo('/pledges')} />
+          {shareable.remaining > 0 ? <ShareNeedButton need={shareable} label="ask friends to help too" /> : null}
         </Card>
       ) : acceptingPledges ? (
         <View style={styles.pledge}>
@@ -162,6 +173,7 @@ export default function NeedScreen() {
             onPress={pledge}
             loading={createPledge.isPending}
           />
+          <ShareNeedButton need={shareable} />
         </View>
       ) : (
         <Card>
