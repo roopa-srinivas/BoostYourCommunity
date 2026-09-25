@@ -48,11 +48,18 @@ export default function GiveScreen() {
   }));
   const shownFollowed = showAllFollowed ? followedList : followedList.slice(0, FOLLOWED_PREVIEW);
 
+  const organizationNeeds = (needs.data ?? []).filter(
+    (need) => !selectedOrganizationId || need.organization_id === selectedOrganizationId,
+  );
+  const selectedOrganizationName = lower(organizationNeeds[0]?.organization_name);
+  // Needs already shown in "from places you follow" aren't repeated below,
+  // except when a place is picked on the map: then all of its needs show.
+  const shownAbove = new Set(selectedOrganizationId ? [] : shownFollowed.map((need) => need.need_id));
   const visibleNeeds = sortNeeds(
-    (needs.data ?? []).filter((need) => !selectedOrganizationId || need.organization_id === selectedOrganizationId),
+    organizationNeeds.filter((need) => !shownAbove.has(need.need_id)),
     sort,
   );
-  const selectedOrganizationName = lower(visibleNeeds[0]?.organization_name);
+  const allShownAbove = visibleNeeds.length === 0 && organizationNeeds.length > 0;
 
   let where = 'finding your location…';
   if (showSanFrancisco) where = 'san francisco';
@@ -166,6 +173,10 @@ export default function GiveScreen() {
 
       {!center || needs.isPending ? (
         <Loading />
+      ) : allShownAbove ? (
+        <ThemedText type="small" themeColor="textSecondary">
+          everything open nearby is from places you follow, shown above.
+        </ThemedText>
       ) : visibleNeeds.length === 0 ? (
         <>
           <EmptyState
