@@ -52,9 +52,10 @@ export default function GiveScreen() {
     (need) => !selectedOrganizationId || need.organization_id === selectedOrganizationId,
   );
   const selectedOrganizationName = lower(organizationNeeds[0]?.organization_name);
-  // Needs already shown in "from places you follow" aren't repeated below,
-  // except when a place is picked on the map: then all of its needs show.
-  const shownAbove = new Set(selectedOrganizationId ? [] : shownFollowed.map((need) => need.need_id));
+  // Needs from places you follow live in their own section above, so they
+  // aren't repeated below, except when a place is picked on the map: then
+  // all of its needs show.
+  const shownAbove = new Set(selectedOrganizationId ? [] : followedList.map((need) => need.need_id));
   const visibleNeeds = sortNeeds(
     organizationNeeds.filter((need) => !shownAbove.has(need.need_id)),
     sort,
@@ -154,7 +155,7 @@ export default function GiveScreen() {
             {selectedOrganizationName} ›
           </ThemedText>
         ) : (
-          <ThemedText type="sectionTitle">needs near you</ThemedText>
+          <ThemedText type="sectionTitle">{followedList.length > 0 ? 'more needs near you' : 'needs near you'}</ThemedText>
         )}
         {needs.data ? (
           <ThemedText type="small" themeColor="textSecondary">
