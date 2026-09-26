@@ -196,6 +196,9 @@ export default function ProfileScreen() {
       <Button variant="secondary" label="sign out" onPress={() => supabase.auth.signOut()} />
 
       <View style={styles.footer}>
+        <ThemedText type="link" accessibilityRole="link" style={styles.center} onPress={() => router.push('/welcome')}>
+          how the app works
+        </ThemedText>
         <LegalLinks />
         {deleteAccount.error ? <ErrorText>{errorMessage(deleteAccount.error)}</ErrorText> : null}
         <Button
@@ -218,6 +221,7 @@ const styles = StyleSheet.create({
   adminCard: { gap: Spacing.half },
   setting: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   settingText: { flex: 1, gap: Spacing.half },
+  center: { textAlign: 'center' },
   footer: { gap: Spacing.three, marginTop: Spacing.four },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   gridItem: { width: '31%' },
