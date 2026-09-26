@@ -6,7 +6,7 @@ export default function Layout() {
   const screenOptions = useStackScreenOptions();
   return (
     <Stack screenOptions={screenOptions}>
-      <Stack.Screen name="index" options={{ title: 'profile', headerLargeTitle: true }} />
+      <Stack.Screen name="index" options={{ title: 'profile', headerShown: false }} />
     </Stack>
   );
 }

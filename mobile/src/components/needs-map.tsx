@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
-import MapView, { Marker } from 'react-native-maps';
+import MapView, { Circle, Marker } from 'react-native-maps';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { Coordinates, NearbyNeed } from '@/api/needs';
@@ -14,6 +14,8 @@ import { lower } from '@/lib/format';
 
 type NeedsMapProps = {
   center: Coordinates;
+  /** How far the donor will travel; drawn as a circle and used for the zoom. */
+  radiusMeters: number;
   needs: NearbyNeed[];
   selectedOrganizationId: string | null;
   onSelectOrganization: (organizationId: string | null) => void;
@@ -117,8 +119,11 @@ function FullScreenMap({ onClose, ...props }: NeedsMapProps & { onClose: () => v
   );
 }
 
+const METERS_PER_DEGREE_LATITUDE = 111_000;
+
 function PinMap({
   center,
+  radiusMeters,
   needs,
   selectedOrganizationId,
   onSelectOrganization,
@@ -144,17 +149,27 @@ function PinMap({
     return [...byId.values()];
   }, [needs]);
 
+  // Show the whole travel circle with a little room around it.
+  const delta = ((radiusMeters * 2) / METERS_PER_DEGREE_LATITUDE) * 1.15;
+
   return (
     <MapView
-      // Re-center when the search location changes (e.g. switching to San Francisco).
-      key={`${center.latitude},${center.longitude}`}
+      // Re-center when the search location or distance changes (e.g. switching to San Francisco).
+      key={`${center.latitude},${center.longitude},${radiusMeters}`}
       style={style}
-      initialRegion={{ ...center, latitudeDelta: 0.12, longitudeDelta: 0.12 }}
+      initialRegion={{ ...center, latitudeDelta: delta, longitudeDelta: delta }}
       showsUserLocation
       onPress={(event) => {
         // Android reports marker taps as map presses too.
         if (event.nativeEvent.action !== 'marker-press') onPressMap();
       }}>
+      <Circle
+        center={center}
+        radius={radiusMeters}
+        strokeWidth={2}
+        strokeColor={theme.tint}
+        fillColor={`${theme.tint}14`}
+      />
       {organizations.map((organization) => (
         <Marker
           key={organization.id}

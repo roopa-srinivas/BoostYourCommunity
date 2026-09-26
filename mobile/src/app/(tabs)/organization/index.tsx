@@ -30,7 +30,7 @@ export default function OrganizationScreen() {
 
   if (!organization) {
     return (
-      <Screen onRefresh={memberships.refetch}>
+      <Screen title="organization" onRefresh={memberships.refetch}>
         {memberships.error ? <ErrorText>{errorMessage(memberships.error)}</ErrorText> : null}
         <ThemedText type="sectionTitle">do you work or volunteer at a shelter, pantry or community fridge?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
@@ -165,7 +165,7 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
   const past = (needs.data ?? []).filter((need) => !isActive(need)).reverse();
 
   return (
-    <Screen onRefresh={needs.refetch}>
+    <Screen title="organization" onRefresh={needs.refetch}>
       {header}
       {needs.error ? <ErrorText>{errorMessage(needs.error)}</ErrorText> : null}
       {needs.isPending ? (

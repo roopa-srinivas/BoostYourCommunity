@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { NEARBY_RADIUS_METERS, useFollowedNeeds, useNearbyNeeds } from '@/api/needs';
+import { useFollowedNeeds, useNearbyNeeds } from '@/api/needs';
 import { useFollowedOrganizationIds } from '@/api/organizations';
 import { useProfile } from '@/api/profile';
 import { NeedCard } from '@/components/need-card';
@@ -17,8 +17,9 @@ import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { SAN_FRANCISCO, useUserLocation } from '@/hooks/use-user-location';
 import { useTheme } from '@/hooks/use-theme';
-import { errorMessage, formatDistance, lower } from '@/lib/format';
+import { errorMessage, lower } from '@/lib/format';
 import { CATEGORIES, type NeedCategory } from '@/lib/labels';
+import { milesToMeters, TRAVEL_RADIUS_MILES, useTravelRadius } from '@/lib/travel-radius';
 import { NEED_SORTS, sortNeeds, type NeedSort } from '@/lib/urgency';
 
 const FOLLOWED_PREVIEW = 3;
@@ -37,7 +38,11 @@ export default function GiveScreen() {
 
   const center =
     showSanFrancisco || userLocation.status === 'unavailable' ? SAN_FRANCISCO : userLocation.location;
-  const needs = useNearbyNeeds(center, category === 'all' ? null : category);
+  const [radiusMiles, setRadiusMiles] = useTravelRadius();
+  const [choosingRadius, setChoosingRadius] = useState(false);
+  const radiusMeters = milesToMeters(radiusMiles);
+  const widerRadius = TRAVEL_RADIUS_MILES.find((miles) => miles > radiusMiles);
+  const needs = useNearbyNeeds(center, category === 'all' ? null : category, radiusMeters);
   const followedIds = useFollowedOrganizationIds();
   const followedNeeds = useFollowedNeeds(followedIds.data, category === 'all' ? null : category);
   const [showAllFollowed, setShowAllFollowed] = useState(false);
@@ -82,10 +87,35 @@ export default function GiveScreen() {
             size={14}
             tintColor={theme.textSecondary}
           />
-          <ThemedText type="small" themeColor="textSecondary">
-            {firstName ? `hi ${firstName} · ${where}` : where}
+          <ThemedText type="small" themeColor="textSecondary" style={styles.flexShrink}>
+            {firstName ? `hi ${firstName} · ${where}` : where} ·{' '}
+            <ThemedText
+              type="smallBold"
+              themeColor="tint"
+              accessibilityRole="button"
+              accessibilityLabel={`within ${radiusMiles} miles. change how far you'll travel`}
+              onPress={() => setChoosingRadius((open) => !open)}>
+              within {radiusMiles} mi {choosingRadius ? '▴' : '▾'}
+            </ThemedText>
           </ThemedText>
         </View>
+        {choosingRadius ? (
+          <View style={styles.radius}>
+            <ThemedText type="small" themeColor="textSecondary">
+              how far will you travel to drop off?
+            </ThemedText>
+            <ChipGroup
+              scroll
+              options={TRAVEL_RADIUS_MILES.map((miles) => ({ value: miles, label: `${miles} mi` }))}
+              value={radiusMiles}
+              onChange={(miles) => {
+                setRadiusMiles(miles);
+                setSelectedOrganizationId(null);
+                setChoosingRadius(false);
+              }}
+            />
+          </View>
+        ) : null}
         <ThemedText type="title">i’m here to help my community by giving…</ThemedText>
       </View>
 
@@ -138,6 +168,7 @@ export default function GiveScreen() {
       {center ? (
         <NeedsMap
           center={center}
+          radiusMeters={radiusMeters}
           needs={needs.data ?? []}
           selectedOrganizationId={selectedOrganizationId}
           onSelectOrganization={setSelectedOrganizationId}
@@ -182,8 +213,15 @@ export default function GiveScreen() {
         <>
           <EmptyState
             title="nothing open nearby right now"
-            body={`no needs within ${formatDistance(NEARBY_RADIUS_METERS)}${category === 'all' ? '' : ' in this category'}. check back soon.`}
+            body={`no needs within ${radiusMiles} mi${category === 'all' ? '' : ' in this category'}. check back soon${widerRadius ? ', or look further out' : ''}.`}
           />
+          {widerRadius ? (
+            <Button
+              variant="secondary"
+              label={`look within ${widerRadius} mi`}
+              onPress={() => setRadiusMiles(widerRadius)}
+            />
+          ) : null}
           {!showSanFrancisco && userLocation.status === 'found' ? (
             <Button variant="secondary" label="see san francisco instead" onPress={() => setShowSanFrancisco(true)} />
           ) : null}
@@ -205,6 +243,8 @@ const styles = StyleSheet.create({
   header: { gap: Spacing.two },
   followed: { gap: Spacing.three },
   where: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
+  flexShrink: { flexShrink: 1 },
+  radius: { gap: Spacing.two },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

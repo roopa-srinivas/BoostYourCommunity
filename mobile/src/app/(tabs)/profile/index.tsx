@@ -78,7 +78,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <Screen>
+    <Screen title="profile">
       {profile.error ? <ErrorText>{errorMessage(profile.error)}</ErrorText> : null}
 
       {editing ? (
