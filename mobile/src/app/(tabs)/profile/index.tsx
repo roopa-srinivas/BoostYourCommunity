@@ -174,6 +174,16 @@ export default function ProfileScreen() {
         </Card>
       ) : null}
 
+      <Card style={styles.setting} accessibilityHint="shows the intro again" onPress={() => router.push('/welcome')}>
+        <View style={styles.settingText}>
+          <ThemedText type="bold">how the app works</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            see the quick tour again: giving, pledging, check-in codes and more.
+          </ThemedText>
+        </View>
+        <ThemedText type="link">›</ThemedText>
+      </Card>
+
       <Card style={styles.setting}>
         <View style={styles.settingText}>
           <ThemedText type="bold">show my total to followers</ThemedText>
@@ -196,9 +206,6 @@ export default function ProfileScreen() {
       <Button variant="secondary" label="sign out" onPress={() => supabase.auth.signOut()} />
 
       <View style={styles.footer}>
-        <ThemedText type="link" accessibilityRole="link" style={styles.center} onPress={() => router.push('/welcome')}>
-          how the app works
-        </ThemedText>
         <LegalLinks />
         {deleteAccount.error ? <ErrorText>{errorMessage(deleteAccount.error)}</ErrorText> : null}
         <Button
@@ -221,7 +228,6 @@ const styles = StyleSheet.create({
   adminCard: { gap: Spacing.half },
   setting: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   settingText: { flex: 1, gap: Spacing.half },
-  center: { textAlign: 'center' },
   footer: { gap: Spacing.three, marginTop: Spacing.four },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   gridItem: { width: '31%' },
