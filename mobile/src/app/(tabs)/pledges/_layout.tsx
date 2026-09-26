@@ -6,7 +6,7 @@ export default function Layout() {
   const screenOptions = useStackScreenOptions();
   return (
     <Stack screenOptions={screenOptions}>
-      <Stack.Screen name="index" options={{ title: 'my pledges', headerLargeTitle: true }} />
+      <Stack.Screen name="index" options={{ title: 'my pledges', headerShown: false }} />
     </Stack>
   );
 }

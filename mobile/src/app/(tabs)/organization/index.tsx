@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { useOrganizationNeeds } from '@/api/needs';
-import { useMyOrganizations } from '@/api/organizations';
+import { useMyOrganizations, useOrganizationStats } from '@/api/organizations';
 import { ThemedText } from '@/components/themed-text';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,6 +16,7 @@ import type { Tables } from '@/lib/database.types';
 import { errorMessage, formatWindow, lower } from '@/lib/format';
 import { NEED_STATUS, ORGANIZATION_STATUS } from '@/lib/labels';
 import { repeatBadge, ruleFromNeed } from '@/lib/repeat';
+import { arrivalRate } from '@/lib/stats';
 
 export default function OrganizationScreen() {
   const memberships = useMyOrganizations();
@@ -29,7 +30,7 @@ export default function OrganizationScreen() {
 
   if (!organization) {
     return (
-      <Screen onRefresh={memberships.refetch}>
+      <Screen title="organization" onRefresh={memberships.refetch}>
         {memberships.error ? <ErrorText>{errorMessage(memberships.error)}</ErrorText> : null}
         <ThemedText type="sectionTitle">do you work or volunteer at a shelter, pantry or community fridge?</ThemedText>
         <ThemedText type="small" themeColor="textSecondary">
@@ -94,6 +95,7 @@ export default function OrganizationScreen() {
                   router.push({ pathname: '/organization/new-need', params: { organizationId: organization.id } })
                 }
               />
+              <DashboardSummary organizationId={organization.id} />
             </>
           ) : null}
           <View style={styles.links}>
@@ -128,6 +130,33 @@ export default function OrganizationScreen() {
   );
 }
 
+/** The last 30 days at a glance; opens the full dashboard. */
+function DashboardSummary({ organizationId }: { organizationId: string }) {
+  const stats = useOrganizationStats(organizationId, 30);
+  const rate = stats.data ? arrivalRate(stats.data) : null;
+  return (
+    <Card
+      style={styles.summary}
+      accessibilityHint="opens your dashboard"
+      onPress={() => router.push({ pathname: '/organization/dashboard', params: { organizationId } })}>
+      <View style={styles.summaryText}>
+        <ThemedText type="small" themeColor="textSecondary">
+          last 30 days
+        </ThemedText>
+        <ThemedText type="bold">
+          {stats.data
+            ? `${stats.data.items_received} ${stats.data.items_received === 1 ? 'item' : 'items'} received` +
+              (rate === null ? '' : ` · ${Math.round(rate * 100)}% of pledges arrived`)
+            : stats.error
+              ? 'couldn’t load your numbers'
+              : '…'}
+        </ThemedText>
+      </View>
+      <ThemedText type="link">dashboard ›</ThemedText>
+    </Card>
+  );
+}
+
 function OrganizationNeeds({ organizationId, header }: { organizationId: string; header: React.ReactNode }) {
   const needs = useOrganizationNeeds(organizationId);
   const now = new Date();
@@ -136,7 +165,7 @@ function OrganizationNeeds({ organizationId, header }: { organizationId: string;
   const past = (needs.data ?? []).filter((need) => !isActive(need)).reverse();
 
   return (
-    <Screen onRefresh={needs.refetch}>
+    <Screen title="organization" onRefresh={needs.refetch}>
       {header}
       {needs.error ? <ErrorText>{errorMessage(needs.error)}</ErrorText> : null}
       {needs.isPending ? (
@@ -206,5 +235,7 @@ const styles = StyleSheet.create({
   sectionTitle: { marginTop: Spacing.two },
   badges: { flexDirection: 'row', gap: Spacing.two },
   postAgain: { marginTop: Spacing.one, alignSelf: 'flex-start' },
+  summary: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
+  summaryText: { flex: 1, gap: Spacing.half },
   links: { flexDirection: 'row', justifyContent: 'center', gap: Spacing.four },
 });

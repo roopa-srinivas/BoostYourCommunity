@@ -11,15 +11,19 @@ export type Coordinates = { latitude: number; longitude: number };
 
 export const NEARBY_RADIUS_METERS = 20_000;
 
-export function useNearbyNeeds(location: Coordinates | null, category: NeedCategory | null) {
+export function useNearbyNeeds(
+  location: Coordinates | null,
+  category: NeedCategory | null,
+  radiusMeters: number = NEARBY_RADIUS_METERS,
+) {
   return useQuery({
-    queryKey: ['needs', 'nearby', location?.latitude, location?.longitude, category],
+    queryKey: ['needs', 'nearby', location?.latitude, location?.longitude, category, radiusMeters],
     enabled: !!location,
     queryFn: async () => {
       const { data, error } = await supabase.rpc('needs_near', {
         lat: location!.latitude,
         lng: location!.longitude,
-        radius_m: NEARBY_RADIUS_METERS,
+        radius_m: radiusMeters,
         only_category: category ?? undefined,
       });
       if (error) throw error;

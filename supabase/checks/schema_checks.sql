@@ -505,9 +505,10 @@ select pg_temp.ok('"after 2 times": no third one, and the series ends',
 
 insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeat_unit, repeat_until)
 values ('00000000-0000-4000-8000-000000000002', 'water', 'Until today', 5, now() - interval '5 hours', now() - interval '3 hours', 'day',
-        (now() at time zone 'America/Los_Angeles')::date);
+        -- The local date it started on (not today's: just after midnight that's already tomorrow).
+        ((now() - interval '5 hours') at time zone 'America/Los_Angeles')::date);
 select public.post_next_repeating_needs();
-select pg_temp.ok('"until today": nothing after the end date, and the series ends',
+select pg_temp.ok('"until the day it started": nothing after the end date, and the series ends',
   (select count(*) = 1 and bool_and(repeat_unit is null) from public.needs where title = 'Until today'));
 
 select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
@@ -545,4 +546,63 @@ select pg_temp.ok('someone else''s delete leaves the follow in place', (select c
 select pg_temp.act_as('aaaaaaaa-0000-4000-8000-000000000001');
 delete from public.organization_follows where organization_id = '00000000-0000-4000-8000-000000000002';
 select pg_temp.ok('a donor can unfollow', (select count(*) from public.organization_follows) = 0);
+reset role;
+
+-- Organization dashboard ----------------------------------------------------------------------
+-- Olga runs a new pantry with two needs. Ana brings 6 rice and 2 soap; Ben
+-- pledges 2 soap (doesn't come) and 1 rice (still expected).
+insert into auth.users (id, email, raw_user_meta_data) values
+  ('44444444-0000-4000-8000-000000000010', 'olga@example.com', '{"display_name":"Olga"}');
+select pg_temp.act_as('44444444-0000-4000-8000-000000000010');
+insert into public.organizations (name, address, location) values ('Olga Pantry', '1 Test St', 'POINT(-122.41 37.78)');
+reset role;
+update public.organizations set status = 'approved' where name = 'Olga Pantry';
+create temp table dash as select id as org from public.organizations where name = 'Olga Pantry';
+grant select on dash to authenticated, anon;
+select pg_temp.act_as('44444444-0000-4000-8000-000000000010');
+insert into public.needs (organization_id, category, title, quantity_needed, unit, dropoff_starts_at, dropoff_ends_at)
+select org, 'food'::public.need_category, 'Dash rice', 10, 'bags', now() - interval '1 hour', now() + interval '1 day' from dash
+union all
+select org, 'hygiene', 'Dash soap', 4, 'bars', now() - interval '1 hour', now() + interval '1 day' from dash;
+reset role;
+select pg_temp.act_as('aaaaaaaa-0000-4000-8000-000000000001');
+insert into public.pledges (need_id, quantity) select id, 6 from public.needs where title = 'Dash rice';
+insert into public.pledges (need_id, quantity) select id, 2 from public.needs where title = 'Dash soap';
+insert into public.organization_follows (organization_id) select org from dash;
+reset role;
+select pg_temp.act_as('bbbbbbbb-0000-4000-8000-000000000002');
+insert into public.pledges (need_id, quantity) select id, 2 from public.needs where title = 'Dash soap';
+insert into public.pledges (need_id, quantity) select id, 1 from public.needs where title = 'Dash rice';
+reset role;
+select pg_temp.act_as('44444444-0000-4000-8000-000000000010');
+select public.resolve_pledge(p.id, 'received') from public.pledges p join public.needs n on n.id = p.need_id
+  where n.title like 'Dash %' and p.donor_id = 'aaaaaaaa-0000-4000-8000-000000000001';
+select public.resolve_pledge(p.id, 'no_show') from public.pledges p join public.needs n on n.id = p.need_id
+  where n.title = 'Dash soap' and p.donor_id = 'bbbbbbbb-0000-4000-8000-000000000002';
+create temp table dash_stats as select public.organization_stats((select org from dash)) as s;
+reset role;
+select pg_temp.ok('dashboard: items received, drop-offs and donors',
+  (select (s->>'items_received')::int = 8 and (s->>'dropoffs')::int = 2 and (s->>'donors')::int = 1 from dash_stats));
+select pg_temp.ok('dashboard: arrivals and no-shows for the arrival rate',
+  (select (s->>'arrived')::int = 2 and (s->>'no_shows')::int = 1 from dash_stats));
+select pg_temp.ok('dashboard: pledges still expected',
+  (select (s->>'expected_pledges')::int = 1 and (s->>'expected_items')::int = 1 from dash_stats));
+select pg_temp.ok('dashboard: followers are counted',
+  (select (s->>'followers')::int = 1 from dash_stats));
+select pg_temp.ok('dashboard: needs posted and filled',
+  (select (s->>'needs_posted')::int = 2 and (s->>'needs_filled')::int = 0 from dash_stats));
+select pg_temp.ok('dashboard: categories, most asked-for first, with what came in',
+  (select s->'categories'->0->>'category' = 'food' and (s->'categories'->0->>'needed')::int = 10
+      and (s->'categories'->0->>'received')::int = 6 and (s->'categories'->1->>'received')::int = 2 from dash_stats));
+select pg_temp.act_as('aaaaaaaa-0000-4000-8000-000000000001');
+select pg_temp.rejects('donors cannot see an organization''s dashboard',
+  'select public.organization_stats((select org from dash))');
+reset role;
+select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
+select pg_temp.rejects('staff of another organization cannot see it either',
+  'select public.organization_stats((select org from dash))');
+reset role;
+select pg_temp.act_as(null);
+select pg_temp.rejects('signed-out visitors cannot see dashboards',
+  'select public.organization_stats((select org from dash))');
 reset role;

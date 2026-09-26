@@ -34,7 +34,7 @@ export default function MyPledgesScreen() {
   }
 
   return (
-    <Screen onRefresh={pledges.refetch}>
+    <Screen title="my pledges" onRefresh={pledges.refetch}>
       {pledges.error ? <ErrorText>{errorMessage(pledges.error)}</ErrorText> : null}
       {cancelPledge.error ? <ErrorText>{errorMessage(cancelPledge.error)}</ErrorText> : null}
 

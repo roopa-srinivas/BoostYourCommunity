@@ -26,7 +26,7 @@ export default function CommunityScreen() {
   const heat = useCommunityHeat(center);
 
   return (
-    <Screen onRefresh={() => Promise.all([leaderboard.refetch(), heat.refetch()])}>
+    <Screen title="community" onRefresh={() => Promise.all([leaderboard.refetch(), heat.refetch()])}>
       <Leaderboard query={leaderboard} />
       <Heat
         center={center}

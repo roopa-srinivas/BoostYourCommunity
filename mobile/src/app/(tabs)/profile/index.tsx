@@ -8,12 +8,14 @@ import { useMyPledges } from '@/api/pledges';
 import { useDeleteAccount, useProfile, useSetHideFromLeaderboard, useUpdateDisplayName } from '@/api/profile';
 import { BadgeTile } from '@/components/badge-tile';
 import { LegalLinks } from '@/components/legal-links';
+import { YearInGivingCard } from '@/components/year-in-giving';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ErrorText, Loading } from '@/components/ui/message';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Screen } from '@/components/ui/screen';
+import { StatTile } from '@/components/ui/stat-tile';
 import { TextField } from '@/components/ui/text-field';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -76,7 +78,7 @@ export default function ProfileScreen() {
   }
 
   return (
-    <Screen>
+    <Screen title="profile">
       {profile.error ? <ErrorText>{errorMessage(profile.error)}</ErrorText> : null}
 
       {editing ? (
@@ -118,10 +120,12 @@ export default function ProfileScreen() {
       )}
 
       <View style={styles.row}>
-        <Stat value={receivedPledges.length} label={'drop-offs\nconfirmed'} />
-        <Stat value={itemsDonated} label={'items\ndonated'} />
-        <Stat value={upcoming} label={'upcoming\ndrop-offs'} />
+        <StatTile value={receivedPledges.length} label={'drop-offs\nconfirmed'} />
+        <StatTile value={itemsDonated} label={'items\ndonated'} />
+        <StatTile value={upcoming} label={'upcoming\ndrop-offs'} />
       </View>
+
+      {pledges.data ? <YearInGivingCard pledges={pledges.data} /> : null}
 
       <View style={styles.section}>
         <ThemedText type="sectionTitle">badges</ThemedText>
@@ -205,18 +209,6 @@ export default function ProfileScreen() {
   );
 }
 
-function Stat({ value, label }: { value: number; label: string }) {
-  return (
-    <Card style={styles.stat}>
-      <ThemedText type="title">{value}</ThemedText>
-      {/* Every label is two lines, centred, so the three boxes line up. */}
-      <ThemedText type="small" themeColor="textSecondary" style={styles.statLabel} numberOfLines={2}>
-        {label}
-      </ThemedText>
-    </Card>
-  );
-}
-
 const styles = StyleSheet.create({
   section: { gap: Spacing.two },
   row: { flexDirection: 'row', gap: Spacing.two },
@@ -229,6 +221,4 @@ const styles = StyleSheet.create({
   footer: { gap: Spacing.three, marginTop: Spacing.four },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   gridItem: { width: '31%' },
-  stat: { flex: 1, alignItems: 'center', paddingHorizontal: Spacing.two, paddingVertical: Spacing.three },
-  statLabel: { textAlign: 'center', fontSize: 13, lineHeight: 17 },
 });

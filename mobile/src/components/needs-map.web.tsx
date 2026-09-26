@@ -2,6 +2,7 @@ import type { Coordinates, NearbyNeed } from '@/api/needs';
 
 type NeedsMapProps = {
   center: Coordinates;
+  radiusMeters: number;
   needs: NearbyNeed[];
   selectedOrganizationId: string | null;
   onSelectOrganization: (organizationId: string | null) => void;

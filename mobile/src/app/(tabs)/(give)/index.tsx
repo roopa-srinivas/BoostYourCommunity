@@ -2,14 +2,14 @@ import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { NEARBY_RADIUS_METERS, useFollowedNeeds, useNearbyNeeds } from '@/api/needs';
+import { useFollowedNeeds, useNearbyNeeds } from '@/api/needs';
 import { useFollowedOrganizationIds } from '@/api/organizations';
 import { useProfile } from '@/api/profile';
 import { NeedCard } from '@/components/need-card';
 import { NeedsMap } from '@/components/needs-map';
 import { ThemedText } from '@/components/themed-text';
+import { TravelRadiusSlider } from '@/components/travel-radius-slider';
 import { Button } from '@/components/ui/button';
 import { ChipGroup } from '@/components/ui/chip';
 import { EmptyState, ErrorText, Loading } from '@/components/ui/message';
@@ -17,8 +17,9 @@ import { Screen } from '@/components/ui/screen';
 import { Spacing } from '@/constants/theme';
 import { SAN_FRANCISCO, useUserLocation } from '@/hooks/use-user-location';
 import { useTheme } from '@/hooks/use-theme';
-import { errorMessage, formatDistance, lower } from '@/lib/format';
+import { errorMessage, lower } from '@/lib/format';
 import { CATEGORIES, type NeedCategory } from '@/lib/labels';
+import { MAX_TRAVEL_MILES, milesToMeters, TRAVEL_RADIUS_MARKS, useTravelRadius } from '@/lib/travel-radius';
 import { NEED_SORTS, sortNeeds, type NeedSort } from '@/lib/urgency';
 
 const FOLLOWED_PREVIEW = 3;
@@ -27,7 +28,6 @@ const CATEGORY_FILTERS = [{ value: 'all' as const, label: 'anything' }, ...CATEG
 
 export default function GiveScreen() {
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const profile = useProfile();
   const userLocation = useUserLocation();
   const [showSanFrancisco, setShowSanFrancisco] = useState(false);
@@ -37,7 +37,12 @@ export default function GiveScreen() {
 
   const center =
     showSanFrancisco || userLocation.status === 'unavailable' ? SAN_FRANCISCO : userLocation.location;
-  const needs = useNearbyNeeds(center, category === 'all' ? null : category);
+  const [radiusMiles, setRadiusMiles] = useTravelRadius();
+  const [choosingRadius, setChoosingRadius] = useState(false);
+  const radiusMeters = milesToMeters(radiusMiles);
+  // The next labelled distance out, for the empty state.
+  const widerRadius = radiusMiles < MAX_TRAVEL_MILES ? TRAVEL_RADIUS_MARKS.find((miles) => miles > radiusMiles) : undefined;
+  const needs = useNearbyNeeds(center, category === 'all' ? null : category, radiusMeters);
   const followedIds = useFollowedOrganizationIds();
   const followedNeeds = useFollowedNeeds(followedIds.data, category === 'all' ? null : category);
   const [showAllFollowed, setShowAllFollowed] = useState(false);
@@ -52,9 +57,10 @@ export default function GiveScreen() {
     (need) => !selectedOrganizationId || need.organization_id === selectedOrganizationId,
   );
   const selectedOrganizationName = lower(organizationNeeds[0]?.organization_name);
-  // Needs already shown in "from places you follow" aren't repeated below,
-  // except when a place is picked on the map: then all of its needs show.
-  const shownAbove = new Set(selectedOrganizationId ? [] : shownFollowed.map((need) => need.need_id));
+  // Needs from places you follow live in their own section above, so they
+  // aren't repeated below, except when a place is picked on the map: then
+  // all of its needs show.
+  const shownAbove = new Set(selectedOrganizationId ? [] : followedList.map((need) => need.need_id));
   const visibleNeeds = sortNeeds(
     organizationNeeds.filter((need) => !shownAbove.has(need.need_id)),
     sort,
@@ -71,9 +77,8 @@ export default function GiveScreen() {
   return (
     <Screen
       onRefresh={() => Promise.all([needs.refetch(), followedIds.refetch(), followedNeeds.refetch()])}
-      // No header here, so handle the top safe area ourselves on every platform.
-      contentInsetAdjustmentBehavior="never"
-      contentContainerStyle={{ paddingTop: insets.top + Spacing.four }}>
+      // No header here: the screen handles the top safe area itself.
+      headerless>
       <View style={styles.header}>
         <View style={styles.where}>
           <SymbolView
@@ -81,10 +86,27 @@ export default function GiveScreen() {
             size={14}
             tintColor={theme.textSecondary}
           />
-          <ThemedText type="small" themeColor="textSecondary">
-            {firstName ? `hi ${firstName} · ${where}` : where}
+          <ThemedText type="small" themeColor="textSecondary" style={styles.flexShrink}>
+            {firstName ? `hi ${firstName} · ${where}` : where} ·{' '}
+            <ThemedText
+              type="smallBold"
+              themeColor="tint"
+              accessibilityRole="button"
+              accessibilityLabel={`within ${radiusMiles} miles. change how far you'll travel`}
+              onPress={() => setChoosingRadius((open) => !open)}>
+              within {radiusMiles} mi {choosingRadius ? '▴' : '▾'}
+            </ThemedText>
           </ThemedText>
         </View>
+        {choosingRadius ? (
+          <TravelRadiusSlider
+            value={radiusMiles}
+            onChange={(miles) => {
+              setRadiusMiles(miles);
+              setSelectedOrganizationId(null);
+            }}
+          />
+        ) : null}
         <ThemedText type="title">i’m here to help my community by giving…</ThemedText>
       </View>
 
@@ -137,6 +159,7 @@ export default function GiveScreen() {
       {center ? (
         <NeedsMap
           center={center}
+          radiusMeters={radiusMeters}
           needs={needs.data ?? []}
           selectedOrganizationId={selectedOrganizationId}
           onSelectOrganization={setSelectedOrganizationId}
@@ -154,7 +177,7 @@ export default function GiveScreen() {
             {selectedOrganizationName} ›
           </ThemedText>
         ) : (
-          <ThemedText type="sectionTitle">needs near you</ThemedText>
+          <ThemedText type="sectionTitle">{followedList.length > 0 ? 'more needs near you' : 'needs near you'}</ThemedText>
         )}
         {needs.data ? (
           <ThemedText type="small" themeColor="textSecondary">
@@ -181,8 +204,15 @@ export default function GiveScreen() {
         <>
           <EmptyState
             title="nothing open nearby right now"
-            body={`no needs within ${formatDistance(NEARBY_RADIUS_METERS)}${category === 'all' ? '' : ' in this category'}. check back soon.`}
+            body={`no needs within ${radiusMiles} mi${category === 'all' ? '' : ' in this category'}. check back soon${widerRadius ? ', or look further out' : ''}.`}
           />
+          {widerRadius ? (
+            <Button
+              variant="secondary"
+              label={`look within ${widerRadius} mi`}
+              onPress={() => setRadiusMiles(widerRadius)}
+            />
+          ) : null}
           {!showSanFrancisco && userLocation.status === 'found' ? (
             <Button variant="secondary" label="see san francisco instead" onPress={() => setShowSanFrancisco(true)} />
           ) : null}
@@ -204,6 +234,7 @@ const styles = StyleSheet.create({
   header: { gap: Spacing.two },
   followed: { gap: Spacing.three },
   where: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
+  flexShrink: { flexShrink: 1 },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
