@@ -505,9 +505,10 @@ select pg_temp.ok('"after 2 times": no third one, and the series ends',
 
 insert into public.needs (organization_id, category, title, quantity_needed, dropoff_starts_at, dropoff_ends_at, repeat_unit, repeat_until)
 values ('00000000-0000-4000-8000-000000000002', 'water', 'Until today', 5, now() - interval '5 hours', now() - interval '3 hours', 'day',
-        (now() at time zone 'America/Los_Angeles')::date);
+        -- The local date it started on (not today's: just after midnight that's already tomorrow).
+        ((now() - interval '5 hours') at time zone 'America/Los_Angeles')::date);
 select public.post_next_repeating_needs();
-select pg_temp.ok('"until today": nothing after the end date, and the series ends',
+select pg_temp.ok('"until the day it started": nothing after the end date, and the series ends',
   (select count(*) = 1 and bool_and(repeat_unit is null) from public.needs where title = 'Until today'));
 
 select pg_temp.act_as('cccccccc-0000-4000-8000-000000000003');
