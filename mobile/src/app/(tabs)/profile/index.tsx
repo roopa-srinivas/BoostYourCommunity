@@ -174,6 +174,16 @@ export default function ProfileScreen() {
         </Card>
       ) : null}
 
+      <Card style={styles.setting} accessibilityHint="shows the intro again" onPress={() => router.push('/welcome')}>
+        <View style={styles.settingText}>
+          <ThemedText type="bold">how the app works</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            see the quick tour again: giving, pledging, check-in codes and more.
+          </ThemedText>
+        </View>
+        <ThemedText type="link">›</ThemedText>
+      </Card>
+
       <Card style={styles.setting}>
         <View style={styles.settingText}>
           <ThemedText type="bold">show my total to followers</ThemedText>
