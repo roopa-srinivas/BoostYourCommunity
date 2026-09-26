@@ -2,7 +2,6 @@ import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useFollowedNeeds, useNearbyNeeds } from '@/api/needs';
 import { useFollowedOrganizationIds } from '@/api/organizations';
@@ -10,6 +9,7 @@ import { useProfile } from '@/api/profile';
 import { NeedCard } from '@/components/need-card';
 import { NeedsMap } from '@/components/needs-map';
 import { ThemedText } from '@/components/themed-text';
+import { TravelRadiusSlider } from '@/components/travel-radius-slider';
 import { Button } from '@/components/ui/button';
 import { ChipGroup } from '@/components/ui/chip';
 import { EmptyState, ErrorText, Loading } from '@/components/ui/message';
@@ -28,7 +28,6 @@ const CATEGORY_FILTERS = [{ value: 'all' as const, label: 'anything' }, ...CATEG
 
 export default function GiveScreen() {
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const profile = useProfile();
   const userLocation = useUserLocation();
   const [showSanFrancisco, setShowSanFrancisco] = useState(false);
@@ -77,9 +76,8 @@ export default function GiveScreen() {
   return (
     <Screen
       onRefresh={() => Promise.all([needs.refetch(), followedIds.refetch(), followedNeeds.refetch()])}
-      // No header here, so handle the top safe area ourselves on every platform.
-      contentInsetAdjustmentBehavior="never"
-      contentContainerStyle={{ paddingTop: insets.top + Spacing.four }}>
+      // No header here: the screen handles the top safe area itself.
+      headerless>
       <View style={styles.header}>
         <View style={styles.where}>
           <SymbolView
@@ -100,21 +98,13 @@ export default function GiveScreen() {
           </ThemedText>
         </View>
         {choosingRadius ? (
-          <View style={styles.radius}>
-            <ThemedText type="small" themeColor="textSecondary">
-              how far will you travel to drop off?
-            </ThemedText>
-            <ChipGroup
-              scroll
-              options={TRAVEL_RADIUS_MILES.map((miles) => ({ value: miles, label: `${miles} mi` }))}
-              value={radiusMiles}
-              onChange={(miles) => {
-                setRadiusMiles(miles);
-                setSelectedOrganizationId(null);
-                setChoosingRadius(false);
-              }}
-            />
-          </View>
+          <TravelRadiusSlider
+            value={radiusMiles}
+            onChange={(miles) => {
+              setRadiusMiles(miles);
+              setSelectedOrganizationId(null);
+            }}
+          />
         ) : null}
         <ThemedText type="title">i’m here to help my community by giving…</ThemedText>
       </View>
@@ -244,7 +234,6 @@ const styles = StyleSheet.create({
   followed: { gap: Spacing.three },
   where: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
   flexShrink: { flexShrink: 1 },
-  radius: { gap: Spacing.two },
   sectionHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',

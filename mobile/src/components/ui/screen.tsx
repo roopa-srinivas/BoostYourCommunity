@@ -15,12 +15,15 @@ type ScreenProps = ScrollViewProps & {
    * and handles the top safe area, like Give.
    */
   title?: string;
+  /** A tab screen without a header that draws its own top (Give). */
+  headerless?: boolean;
 };
 
 /** Scrollable page body with consistent padding and a readable max width. */
-export function Screen({ children, onRefresh, title, contentContainerStyle, ...rest }: ScreenProps) {
+export function Screen({ children, onRefresh, title, headerless, contentContainerStyle, ...rest }: ScreenProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const ownTop = headerless || !!title;
   // Only show the spinner for a refresh the person pulled for. Tying it to
   // background refetches shows it on every screen open, and on iOS a
   // spinner that appears without a pull gets stuck until you scroll.
@@ -38,14 +41,15 @@ export function Screen({ children, onRefresh, title, contentContainerStyle, ...r
   return (
     <ScrollView
       style={{ backgroundColor: theme.background }}
-      contentInsetAdjustmentBehavior={title ? 'never' : 'automatic'}
+      contentInsetAdjustmentBehavior={ownTop ? 'never' : 'automatic'}
       keyboardShouldPersistTaps="handled"
       refreshControl={
         onRefresh ? <RefreshControl refreshing={pulling} onRefresh={refresh} /> : undefined
       }
       contentContainerStyle={[
         styles.outer,
-        title ? { paddingTop: insets.top + Spacing.four } : null,
+        // Just clear the status bar / notch, with a small gap.
+        ownTop ? { paddingTop: insets.top + Spacing.two } : null,
         contentContainerStyle,
       ]}
       {...rest}>
