@@ -1,24 +1,16 @@
-import { router } from "expo-router";
-import { SymbolView } from "expo-symbols";
-import { useMemo, useRef, useState } from "react";
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from "react-native";
-import MapView, { Circle, Marker } from "react-native-maps";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { router } from 'expo-router';
+import { useMemo, useRef, useState } from 'react';
+import { Modal, ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import MapView, { Circle, Marker } from 'react-native-maps';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import type { Coordinates, NearbyNeed } from "@/api/needs";
-import { NeedCard } from "@/components/need-card";
-import { ThemedText } from "@/components/themed-text";
-import { FontFamily, Radius, Spacing } from "@/constants/theme";
-import { useTheme } from "@/hooks/use-theme";
-import { lower } from "@/lib/format";
+import type { Coordinates, NearbyNeed } from '@/api/needs';
+import { MapButton } from '@/components/map-button';
+import { NeedCard } from '@/components/need-card';
+import { ThemedText } from '@/components/themed-text';
+import { FontFamily, Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { lower } from '@/lib/format';
 
 type NeedsMapProps = {
   center: Coordinates;
@@ -34,61 +26,27 @@ type NeedsMapProps = {
  * Tapping anywhere else on the map (or the expand button) opens it full screen.
  */
 export function NeedsMap(props: NeedsMapProps) {
-  const theme = useTheme();
   const [expanded, setExpanded] = useState(false);
 
   return (
     <View>
-      <PinMap
-        {...props}
-        style={styles.small}
-        controlsTop={Spacing.two + 44}
-        onPressMap={() => setExpanded(true)}
-      />
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="expand the map"
-        hitSlop={8}
-        onPress={() => setExpanded(true)}
-        style={[
-          styles.expand,
-          {
-            backgroundColor: theme.backgroundElement,
-            boxShadow: `0 1px 3px ${theme.shadow}`,
-          },
-        ]}
-      >
-        <SymbolView
-          name={{
-            ios: "arrow.up.left.and.arrow.down.right",
-            android: "open_in_full",
-            web: "open_in_full",
-          }}
-          size={16}
-          tintColor={theme.text}
-        />
-      </Pressable>
+      <PinMap {...props} style={styles.small} controlsTop={Spacing.two + 44} onPressMap={() => setExpanded(true)} />
+      <MapButton icon="expand" label="expand the map" onPress={() => setExpanded(true)} style={styles.expand} />
       <Modal
         visible={expanded}
         animationType="slide"
         presentationStyle="fullScreen"
-        onRequestClose={() => setExpanded(false)}
-      >
+        onRequestClose={() => setExpanded(false)}>
         <FullScreenMap {...props} onClose={() => setExpanded(false)} />
       </Modal>
     </View>
   );
 }
 
-function FullScreenMap({
-  onClose,
-  ...props
-}: NeedsMapProps & { onClose: () => void }) {
+function FullScreenMap({ onClose, ...props }: NeedsMapProps & { onClose: () => void }) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const selectedNeeds = props.needs.filter(
-    (need) => need.organization_id === props.selectedOrganizationId,
-  );
+  const selectedNeeds = props.needs.filter((need) => need.organization_id === props.selectedOrganizationId);
   const selected = selectedNeeds[0];
 
   return (
@@ -99,27 +57,13 @@ function FullScreenMap({
         controlsTop={insets.top + Spacing.two}
         onPressMap={() => props.onSelectOrganization(null)}
       />
-
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="close the map"
-        hitSlop={8}
+      <MapButton
+        icon="close"
+        label="close the map"
+        size={44}
         onPress={onClose}
-        style={[
-          styles.close,
-          {
-            top: insets.top + Spacing.two,
-            backgroundColor: theme.backgroundElement,
-            boxShadow: `0 1px 3px ${theme.shadow}`,
-          },
-        ]}
-      >
-        <SymbolView
-          name={{ ios: "xmark", android: "close", web: "close" }}
-          size={18}
-          tintColor={theme.text}
-        />
-      </Pressable>
+        style={[styles.close, { top: insets.top + Spacing.two }]}
+      />
 
       {selected ? (
         <View
@@ -130,14 +74,9 @@ function FullScreenMap({
               backgroundColor: theme.background,
               boxShadow: `0 -2px 8px ${theme.shadow}`,
             },
-          ]}
-        >
+          ]}>
           <View style={styles.sheetHeader}>
-            <ThemedText
-              type="sectionTitle"
-              style={styles.flex}
-              numberOfLines={1}
-            >
+            <ThemedText type="sectionTitle" style={styles.flex} numberOfLines={1}>
               {lower(selected.organization_name)}
             </ThemedText>
             <ThemedText
@@ -145,12 +84,8 @@ function FullScreenMap({
               accessibilityRole="link"
               onPress={() => {
                 onClose();
-                router.push({
-                  pathname: "/org/[id]",
-                  params: { id: selected.organization_id },
-                });
-              }}
-            >
+                router.push({ pathname: '/org/[id]', params: { id: selected.organization_id } });
+              }}>
               their page ›
             </ThemedText>
           </View>
@@ -161,25 +96,14 @@ function FullScreenMap({
                 need={need}
                 onPress={() => {
                   onClose();
-                  router.push({
-                    pathname: "/need/[id]",
-                    params: { id: need.need_id },
-                  });
+                  router.push({ pathname: '/need/[id]', params: { id: need.need_id } });
                 }}
               />
             ))}
           </ScrollView>
         </View>
       ) : (
-        <View
-          style={[
-            styles.hint,
-            {
-              bottom: insets.bottom + Spacing.four,
-              backgroundColor: theme.backgroundElement,
-            },
-          ]}
-        >
+        <View style={[styles.hint, { bottom: insets.bottom + Spacing.four, backgroundColor: theme.backgroundElement }]}>
           <ThemedText type="small">tap a pin to see what they need</ThemedText>
         </View>
       )}
@@ -208,16 +132,7 @@ function PinMap({
   const mapRef = useRef<MapView>(null);
 
   const organizations = useMemo(() => {
-    const byId = new Map<
-      string,
-      {
-        id: string;
-        name: string;
-        latitude: number;
-        longitude: number;
-        count: number;
-      }
-    >();
+    const byId = new Map<string, { id: string; name: string; latitude: number; longitude: number; count: number }>();
     for (const need of needs) {
       const existing = byId.get(need.organization_id);
       if (existing) existing.count += 1;
@@ -248,9 +163,8 @@ function PinMap({
         showsUserLocation
         onPress={(event) => {
           // Android reports marker taps as map presses too.
-          if (event.nativeEvent.action !== "marker-press") onPressMap();
-        }}
-      >
+          if (event.nativeEvent.action !== 'marker-press') onPressMap();
+        }}>
         <Circle
           center={center}
           radius={radiusMeters}
@@ -261,115 +175,58 @@ function PinMap({
         {organizations.map((organization) => (
           <Marker
             key={organization.id}
-            coordinate={{
-              latitude: organization.latitude,
-              longitude: organization.longitude,
-            }}
+            coordinate={{ latitude: organization.latitude, longitude: organization.longitude }}
             title={organization.name}
-            description={`${organization.count} open ${organization.count === 1 ? "need" : "needs"}`}
-            onPress={() => onSelectOrganization(organization.id)}
-          >
+            description={`${organization.count} open ${organization.count === 1 ? 'need' : 'needs'}`}
+            onPress={() => onSelectOrganization(organization.id)}>
             {/* Terracotta pin with the number of open needs; green when selected. */}
             <View
               style={[
                 styles.pin,
                 {
-                  backgroundColor:
-                    organization.id === selectedOrganizationId
-                      ? theme.tint
-                      : theme.accent,
+                  backgroundColor: organization.id === selectedOrganizationId ? theme.tint : theme.accent,
                   borderColor: theme.backgroundElement,
                 },
-              ]}
-            >
-              <ThemedText style={[styles.pinLabel, { color: theme.onAccent }]}>
-                {organization.count}
-              </ThemedText>
+              ]}>
+              <ThemedText style={[styles.pinLabel, { color: theme.onAccent }]}>{organization.count}</ThemedText>
             </View>
           </Marker>
         ))}
       </MapView>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="recenter the map"
-        hitSlop={8}
+      <MapButton
+        icon="recenter"
+        label="recenter the map"
         onPress={() => mapRef.current?.animateToRegion(home, 400)}
-        style={[
-          styles.recenter,
-          {
-            top: controlsTop,
-            backgroundColor: theme.backgroundElement,
-            boxShadow: `0 1px 3px ${theme.shadow}`,
-          },
-        ]}
-      >
-        <SymbolView
-          name={{
-            ios: "location.fill",
-            android: "my_location",
-            web: "my_location",
-          }}
-          size={16}
-          tintColor={theme.tint}
-        />
-      </Pressable>
+        style={[styles.recenter, { top: controlsTop }]}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  small: { height: 240, borderRadius: Radius.card, overflow: "hidden" },
+  small: { height: 240, borderRadius: Radius.card, overflow: 'hidden' },
   fill: { flex: 1 },
   flex: { flex: 1 },
-  expand: {
-    position: "absolute",
-    top: Spacing.two,
-    right: Spacing.two,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  recenter: {
-    position: "absolute",
-    right: Spacing.two,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  close: {
-    position: "absolute",
-    left: Spacing.three,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+  expand: { top: Spacing.two, right: Spacing.two },
+  recenter: { right: Spacing.two },
+  close: { left: Spacing.three },
   sheet: {
-    position: "absolute",
+    position: 'absolute',
     left: 0,
     right: 0,
     bottom: 0,
-    maxHeight: "50%",
+    maxHeight: '50%',
     paddingTop: Spacing.three,
     paddingHorizontal: Spacing.three,
     borderTopLeftRadius: Radius.card,
     borderTopRightRadius: Radius.card,
     gap: Spacing.two,
   },
-  sheetHeader: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    gap: Spacing.two,
-  },
+  sheetHeader: { flexDirection: 'row', alignItems: 'baseline', gap: Spacing.two },
   sheetList: { gap: Spacing.two },
   hint: {
-    position: "absolute",
-    alignSelf: "center",
+    position: 'absolute',
+    alignSelf: 'center',
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: Radius.pill,
@@ -379,8 +236,8 @@ const styles = StyleSheet.create({
     height: 34,
     borderRadius: 17,
     borderWidth: 3,
-    alignItems: "center",
-    justifyContent: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   pinLabel: { fontFamily: FontFamily.bold, fontSize: 14, lineHeight: 18 },
 });
