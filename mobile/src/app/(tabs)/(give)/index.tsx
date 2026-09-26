@@ -19,7 +19,7 @@ import { SAN_FRANCISCO, useUserLocation } from '@/hooks/use-user-location';
 import { useTheme } from '@/hooks/use-theme';
 import { errorMessage, lower } from '@/lib/format';
 import { CATEGORIES, type NeedCategory } from '@/lib/labels';
-import { milesToMeters, TRAVEL_RADIUS_MILES, useTravelRadius } from '@/lib/travel-radius';
+import { MAX_TRAVEL_MILES, milesToMeters, TRAVEL_RADIUS_MARKS, useTravelRadius } from '@/lib/travel-radius';
 import { NEED_SORTS, sortNeeds, type NeedSort } from '@/lib/urgency';
 
 const FOLLOWED_PREVIEW = 3;
@@ -40,7 +40,8 @@ export default function GiveScreen() {
   const [radiusMiles, setRadiusMiles] = useTravelRadius();
   const [choosingRadius, setChoosingRadius] = useState(false);
   const radiusMeters = milesToMeters(radiusMiles);
-  const widerRadius = TRAVEL_RADIUS_MILES.find((miles) => miles > radiusMiles);
+  // The next labelled distance out, for the empty state.
+  const widerRadius = radiusMiles < MAX_TRAVEL_MILES ? TRAVEL_RADIUS_MARKS.find((miles) => miles > radiusMiles) : undefined;
   const needs = useNearbyNeeds(center, category === 'all' ? null : category, radiusMeters);
   const followedIds = useFollowedOrganizationIds();
   const followedNeeds = useFollowedNeeds(followedIds.data, category === 'all' ? null : category);
