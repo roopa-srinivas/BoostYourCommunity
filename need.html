@@ -49,6 +49,7 @@
     </div>
 
     <p id="how">to pledge, open this need in the Boost Your Community app. you’ll get a check-in code to show when you drop off.</p>
+    <p id="open-app"><a class="button" id="open-link" href="app/">pledge on the web</a></p>
   </article>
 
   <footer><a href="index.html">about Boost Your Community</a> · <a href="privacy.html">privacy</a></footer>
@@ -140,7 +141,9 @@
       $('closing').textContent = hoursLeft < 1 ? 'closes in under an hour' : `closes in ${Math.floor(hoursLeft)} hours`;
       $('closing').hidden = false;
     }
+    $('open-link').href = `app/need/${id}`;
     if (!open) {
+      $('open-app').hidden = true;
       $('how').textContent = remaining <= 0
         ? 'this need is fully pledged. thank you, everyone!'
         : 'this need is no longer taking pledges.';

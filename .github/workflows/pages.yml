@@ -1,0 +1,64 @@
+# Publishes the GitHub Pages site on every push to main: the prototype,
+# legal pages, check-in and share pages from the repo root, plus the web
+# version of the app built into /app.
+name: pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deploy at a time; a newer push replaces a queued one.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: build site
+    runs-on: ubuntu-latest
+    env:
+      # Public values the app already ships with (the same ones in need.html).
+      # Row level security decides what they can reach.
+      EXPO_PUBLIC_SUPABASE_URL: https://rzijjjaazapmwbzhsukx.supabase.co
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_iw22x2-Lu0f6UGIGDSx6Mg_HdXKks2t
+      EXPO_BASE_URL: /BoostYourCommunity/app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install app dependencies
+        working-directory: mobile
+        run: npm ci
+      - name: Build the web app
+        working-directory: mobile
+        run: npx expo export --platform web --output-dir ../_site/app
+      - name: Add the site's static pages
+        run: |
+          cp index.html app.html privacy.html terms.html checkin.html need.html legal.css _site/
+          # GitHub Pages answers unknown paths with the root 404.html. Make
+          # that the app, so links like /app/need/<id> open it (the app
+          # routes by the address).
+          cp _site/app/index.html _site/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    name: deploy
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}app/
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
