@@ -1,7 +1,7 @@
 import { router } from 'expo-router';
 import { SymbolView } from 'expo-symbols';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 
 import { useFollowedNeeds, useNearbyNeeds } from '@/api/needs';
 import { useFollowedOrganizationIds } from '@/api/organizations';
@@ -80,23 +80,35 @@ export default function GiveScreen() {
       // No header here: the screen handles the top safe area itself.
       headerless>
       <View style={styles.header}>
-        <View style={styles.where}>
-          <SymbolView
-            name={{ ios: 'location.fill', android: 'location_on', web: 'location_on' }}
-            size={14}
-            tintColor={theme.textSecondary}
-          />
-          <ThemedText type="small" themeColor="textSecondary" style={styles.flexShrink}>
-            {firstName ? `hi ${firstName} · ${where}` : where} ·{' '}
-            <ThemedText
-              type="smallBold"
-              themeColor="tint"
-              accessibilityRole="button"
-              accessibilityLabel={`within ${radiusMiles} miles. change how far you'll travel`}
-              onPress={() => setChoosingRadius((open) => !open)}>
-              within {radiusMiles} mi {choosingRadius ? '▴' : '▾'}
+        <View style={styles.topRow}>
+          <View style={[styles.where, styles.flexShrink]}>
+            <SymbolView
+              name={{ ios: 'location.fill', android: 'location_on', web: 'location_on' }}
+              size={14}
+              tintColor={theme.textSecondary}
+            />
+            <ThemedText type="small" themeColor="textSecondary" style={styles.flexShrink}>
+              {firstName ? `hi ${firstName} · ${where}` : where} ·{' '}
+              <ThemedText
+                type="smallBold"
+                themeColor="tint"
+                accessibilityRole="button"
+                accessibilityLabel={`within ${radiusMiles} miles. change how far you'll travel`}
+                onPress={() => setChoosingRadius((open) => !open)}>
+                within {radiusMiles} mi {choosingRadius ? '▴' : '▾'}
+              </ThemedText>
             </ThemedText>
-          </ThemedText>
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="how the app works"
+            hitSlop={10}
+            onPress={() => router.push('/welcome')}
+            style={({ pressed }) => [styles.help, { backgroundColor: theme.backgroundSelected, opacity: pressed ? 0.7 : 1 }]}>
+            <ThemedText type="smallBold" themeColor="textSecondary">
+              ?
+            </ThemedText>
+          </Pressable>
         </View>
         {choosingRadius ? (
           <TravelRadiusSlider
@@ -233,7 +245,9 @@ export default function GiveScreen() {
 const styles = StyleSheet.create({
   header: { gap: Spacing.two },
   followed: { gap: Spacing.three },
+  topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: Spacing.two },
   where: { flexDirection: 'row', alignItems: 'center', gap: Spacing.one },
+  help: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   flexShrink: { flexShrink: 1 },
   sectionHeader: {
     flexDirection: 'row',

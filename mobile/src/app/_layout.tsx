@@ -13,6 +13,7 @@ import { useStackScreenOptions } from '@/hooks/use-stack-screen-options';
 import { queryClient } from '@/lib/query-client';
 import { supabase } from '@/lib/supabase';
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
+import { IntroProvider, useIntro } from '@/providers/intro-provider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -31,9 +32,11 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider value={navigationTheme(colorScheme === 'dark' ? 'dark' : 'light')}>
-          {fontsReady ? <RootStack /> : null}
-        </ThemeProvider>
+        <IntroProvider>
+          <ThemeProvider value={navigationTheme(colorScheme === 'dark' ? 'dark' : 'light')}>
+            {fontsReady ? <RootStack /> : null}
+          </ThemeProvider>
+        </IntroProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
@@ -41,6 +44,7 @@ export default function RootLayout() {
 
 function RootStack() {
   const { session, loading } = useAuth();
+  const intro = useIntro();
   const screenOptions = useStackScreenOptions();
 
   useEffect(() => {
@@ -54,7 +58,8 @@ function RootStack() {
     <>
       {session ? <DeletedAccountGuard /> : null}
       <Stack screenOptions={screenOptions}>
-        <Stack.Protected guard={!!session}>
+        {/* Until the intro has been seen on this device, it's the only screen. */}
+        <Stack.Protected guard={intro.seen && !!session}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="need/[id]" options={{ title: 'need' }} />
           <Stack.Screen name="organization/register" options={{ title: 'register your organization' }} />
@@ -70,9 +75,11 @@ function RootStack() {
           <Stack.Screen name="organization/join" options={{ title: 'join an organization' }} />
           <Stack.Screen name="organization/dashboard" options={{ title: 'dashboard' }} />
         </Stack.Protected>
-        <Stack.Protected guard={!session}>
+        <Stack.Protected guard={intro.seen && !session}>
           <Stack.Screen name="sign-in" options={{ headerShown: false }} />
         </Stack.Protected>
+        {/* Also reopened from profile ("how the app works"). */}
+        <Stack.Screen name="welcome" options={{ headerShown: false, gestureEnabled: intro.seen }} />
       </Stack>
     </>
   );
