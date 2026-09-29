@@ -48,8 +48,9 @@ export function Screen({ children, onRefresh, title, headerless, contentContaine
       }
       contentContainerStyle={[
         styles.outer,
-        // Just clear the status bar / notch, with a small gap.
-        ownTop ? { paddingTop: insets.top + Spacing.two } : null,
+        // Clear the status bar / notch with some room. The web has no
+        // status bar (inset 0), so it gets a bigger gap of its own.
+        ownTop ? { paddingTop: insets.top > 0 ? insets.top + Spacing.three : Spacing.five } : null,
         contentContainerStyle,
       ]}
       {...rest}>

@@ -5,20 +5,20 @@ import { useFonts } from 'expo-font';
 import { Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
 
 import { useProfile } from '@/api/profile';
 import { navigationTheme } from '@/constants/navigation-theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 import { useStackScreenOptions } from '@/hooks/use-stack-screen-options';
 import { queryClient } from '@/lib/query-client';
 import { supabase } from '@/lib/supabase';
+import { AppearanceProvider } from '@/providers/appearance-provider';
 import { AuthProvider, useAuth } from '@/providers/auth-provider';
 import { IntroProvider, useIntro } from '@/providers/intro-provider';
 
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
   const [fontsLoaded, fontError] = useFonts({
     Fraunces_600SemiBold,
     DMSans_400Regular,
@@ -33,13 +33,18 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <IntroProvider>
-          <ThemeProvider value={navigationTheme(colorScheme === 'dark' ? 'dark' : 'light')}>
-            {fontsReady ? <RootStack /> : null}
-          </ThemeProvider>
+          <AppearanceProvider>
+            <NavigationTheme>{fontsReady ? <RootStack /> : null}</NavigationTheme>
+          </AppearanceProvider>
         </IntroProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
+}
+
+/** Navigation colors (headers, backgrounds) follow the chosen light or dark mode. */
+function NavigationTheme({ children }: { children: React.ReactNode }) {
+  return <ThemeProvider value={navigationTheme(useColorScheme())}>{children}</ThemeProvider>;
 }
 
 function RootStack() {
