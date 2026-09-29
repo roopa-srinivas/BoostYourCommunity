@@ -56,8 +56,8 @@ export default function WelcomeScreen() {
 
   function finish() {
     // The first time, marking it seen swaps this screen for sign-in or the
-    // app. Opened again from profile, it just closes.
-    if (intro.seen) goBackOr('/profile');
+    // app. Opened again from Give's "?", it just closes.
+    if (intro.seen) goBackOr('/');
     else intro.markSeen();
   }
 
