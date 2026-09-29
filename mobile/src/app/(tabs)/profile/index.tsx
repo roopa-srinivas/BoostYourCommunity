@@ -12,6 +12,7 @@ import { YearInGivingCard } from '@/components/year-in-giving';
 import { ThemedText } from '@/components/themed-text';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { ChipGroup } from '@/components/ui/chip';
 import { ErrorText, Loading } from '@/components/ui/message';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { Screen } from '@/components/ui/screen';
@@ -23,6 +24,7 @@ import { computeBadges } from '@/lib/badges';
 import { confirm } from '@/lib/confirm';
 import { errorMessage, formatQuantity } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
+import { useAppearance } from '@/providers/appearance-provider';
 import { useAuth } from '@/providers/auth-provider';
 
 export default function ProfileScreen() {
@@ -36,6 +38,7 @@ export default function ProfileScreen() {
   const updateName = useUpdateDisplayName();
   const setHidden = useSetHideFromLeaderboard();
   const theme = useTheme();
+  const appearance = useAppearance();
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState('');
 
@@ -193,6 +196,19 @@ export default function ProfileScreen() {
         />
       </Card>
 
+      <Card style={styles.appearance}>
+        <ThemedText type="bold">appearance</ThemedText>
+        <ChipGroup
+          options={[
+            { value: 'system', label: 'match my phone' },
+            { value: 'light', label: 'light' },
+            { value: 'dark', label: 'dark' },
+          ]}
+          value={appearance.preference}
+          onChange={appearance.setPreference}
+        />
+      </Card>
+
       <Button variant="secondary" label="sign out" onPress={() => supabase.auth.signOut()} />
 
       <View style={styles.footer}>
@@ -216,6 +232,7 @@ const styles = StyleSheet.create({
   start: { alignSelf: 'flex-start', marginTop: Spacing.one },
   next: { gap: Spacing.two },
   adminCard: { gap: Spacing.half },
+  appearance: { gap: Spacing.two },
   setting: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
   settingText: { flex: 1, gap: Spacing.half },
   footer: { gap: Spacing.three, marginTop: Spacing.four },

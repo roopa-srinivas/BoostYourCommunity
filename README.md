@@ -57,7 +57,7 @@ supabase db push
 Developed using Gemini as a co-engineer throughout, from architecture decisions to debugging and verification logic.
 
 ## Live Site
-- **The app on the web:** https://roopa-srinivas.github.io/BoostYourCommunity/app/ (everything except maps, which are phone-only)
+- **The app on the web:** https://roopa-srinivas.github.io/BoostYourCommunity/app/ (maps use Leaflet and OpenStreetMap on the web; phones use Apple or Google maps)
 - **The original prototype:** https://roopa-srinivas.github.io/BoostYourCommunity/
 
 `.github/workflows/pages.yml` publishes both on every push to `main`: it builds the web app into `/app` and adds the static pages from the repo root.

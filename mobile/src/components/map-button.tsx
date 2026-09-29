@@ -46,5 +46,6 @@ export function MapButton({
 }
 
 const styles = StyleSheet.create({
-  button: { position: 'absolute', alignItems: 'center', justifyContent: 'center' },
+  // zIndex keeps it above the map on the web, where the map is a DOM element.
+  button: { position: 'absolute', zIndex: 10, alignItems: 'center', justifyContent: 'center' },
 });
