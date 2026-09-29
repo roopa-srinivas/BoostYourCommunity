@@ -1,5 +1,6 @@
 import { SymbolView, type SymbolViewProps } from 'expo-symbols';
-import { useRef, useState } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useRef, useState } from 'react';
 import { ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -8,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { MaxContentWidth, Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { goBackOr } from '@/lib/navigation';
+import { useAuth } from '@/providers/auth-provider';
 import { useIntro } from '@/providers/intro-provider';
 
 type Page = { icon: SymbolViewProps['name']; warm: boolean; title: string; body: string };
@@ -45,9 +47,17 @@ export default function WelcomeScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const intro = useIntro();
+  const { session } = useAuth();
   const scroller = useRef<ScrollView>(null);
   const [page, setPage] = useState(0);
+  const [finishing, setFinishing] = useState(false);
   const last = page === PAGES.length - 1;
+
+  // Marking the intro seen unlocks sign-in and the app, but this screen stays
+  // open too, so move on once the guards have updated.
+  useEffect(() => {
+    if (finishing && intro.seen) router.replace(session ? '/' : '/sign-in');
+  }, [finishing, intro.seen, session]);
 
   function goTo(index: number) {
     setPage(index);
@@ -55,10 +65,14 @@ export default function WelcomeScreen() {
   }
 
   function finish() {
-    // The first time, marking it seen swaps this screen for sign-in or the
-    // app. Opened again from Give's "?", it just closes.
-    if (intro.seen) goBackOr('/');
-    else intro.markSeen();
+    // Opened again from Give's "?", it just closes. The first time, it marks
+    // the intro seen and the effect above moves on to sign-in or the app.
+    if (intro.seen) {
+      goBackOr('/');
+    } else {
+      setFinishing(true);
+      intro.markSeen();
+    }
   }
 
   return (
