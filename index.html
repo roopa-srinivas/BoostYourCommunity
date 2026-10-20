@@ -256,12 +256,25 @@ footer a { color: var(--text-secondary); }
 .hero-text > *:nth-child(4) { animation-delay: 0.24s; }
 .phone { animation: fadeUp 0.8s 0.15s ease both; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+/* Back to the projects on roopa-srinivas.github.io, on every project page. */
+.nav-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
+.nav-back { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; padding: 0.35rem 0.85rem; border: 1px solid var(--border); border-radius: 999px; white-space: nowrap; transition: color 0.2s, border-color 0.2s; }
+.nav-back:hover { color: var(--tint); border-color: var(--tint); }
+@media (max-width: 700px) {
+  .nav-back .long { display: none; }
+  .nav-logo { white-space: nowrap; font-size: 1.05rem; }
+  /* The hero has the GitHub and app buttons; the bar keeps the back button and title. */
+  .nav-links { display: none; }
+}
 </style>
 </head>
 <body>
 
 <nav>
-  <a class="nav-logo" href="#">boost your community</a>
+  <div class="nav-left">
+    <a class="nav-back" href="https://roopa-srinivas.github.io/#projects" aria-label="All projects by Roopa Srinivas">← <span class="long">All </span>projects</a>
+    <a class="nav-logo" href="#">boost your community</a>
+  </div>
   <ul class="nav-links">
     <li class="hide-sm"><a href="#features">Features</a></li>
     <li class="hide-sm"><a href="#how">How it works</a></li>
