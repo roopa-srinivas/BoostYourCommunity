@@ -195,7 +195,7 @@ footer a:hover { color: var(--amber-light); }
   <ul class="nav-links">
     <li><a href="#features">Features</a></li>
     <li><a href="#how">How It Works</a></li>
-    <li><a href="#demo">Demo</a></li>
+    <li><a href="#demo">Try It</a></li>
     <li><a href="#tech">Tech Stack</a></li>
     <li><a href="https://github.com/roopa-srinivas/BoostYourCommunity" target="_blank">GitHub →</a></li>
   </ul>
@@ -205,11 +205,11 @@ footer a:hover { color: var(--amber-light); }
   <div class="container">
     <div class="hero-inner">
       <div class="hero-text">
-        <p class="hero-eyebrow">Community · Donation · Web App</p>
+        <p class="hero-eyebrow">Community · Donation · iOS, Android &amp; Web</p>
         <h1 class="hero-name">Give what your community<br><em>actually</em> needs, right now.</h1>
-        <p class="hero-desc">Boost Your Community connects local donors with homeless shelters and help centers in real time — matching specific needs like food, water, and clothing with people who can help today.</p>
+        <p class="hero-desc">Boost Your Community connects local donors with homeless shelters and help centers in real time. Organizations post specific needs, like 40 pairs of socks by Tuesday evening, and neighbors pledge exactly what they can bring. Built as a real app with React Native and Supabase, now live on the web.</p>
         <div class="hero-links">
-          <a class="btn btn-primary" href="#demo">Try Demo</a>
+          <a class="btn btn-primary" href="https://roopa-srinivas.github.io/BoostYourCommunity/app/" target="_blank">Open the App</a>
           <a class="btn btn-outline" href="https://github.com/roopa-srinivas/BoostYourCommunity" target="_blank">View on GitHub →</a>
         </div>
       </div>
@@ -219,6 +219,7 @@ footer a:hover { color: var(--amber-light); }
             <span class="map-topbar-title">Boost Your Community</span>
             <div class="map-topbar-tabs">
               <span class="map-tab active">📍 Give</span>
+              <span class="map-tab">🤝 Pledges</span>
               <span class="map-tab">👤 Profile</span>
             </div>
           </div>
@@ -373,10 +374,10 @@ footer a:hover { color: var(--amber-light); }
 </section>
 
 <div class="stats-strip">
-  <div class="stat"><div class="stat-num">3</div><div class="stat-label">Donation categories</div></div>
-  <div class="stat"><div class="stat-num">15+</div><div class="stat-label">Shelter locations mapped</div></div>
-  <div class="stat"><div class="stat-num">6</div><div class="stat-label">Achievement badges</div></div>
-  <div class="stat"><div class="stat-num">300+</div><div class="stat-label">Community markers</div></div>
+  <div class="stat"><div class="stat-num">3</div><div class="stat-label">Platforms: iOS, Android &amp; web</div></div>
+  <div class="stat"><div class="stat-num">5</div><div class="stat-label">App tabs for donors &amp; staff</div></div>
+  <div class="stat"><div class="stat-num">6</div><div class="stat-label">Milestone badges</div></div>
+  <div class="stat"><div class="stat-num">15+</div><div class="stat-label">Reviewed pull requests</div></div>
 </div>
 
 <section id="features">
@@ -384,10 +385,12 @@ footer a:hover { color: var(--amber-light); }
     <p class="section-label">What it does</p>
     <h2 class="section-title">Built to close the gap between<br><em>good intentions</em> and real impact.</h2>
     <div class="features-grid">
-      <div class="feature-card"><div class="feature-icon">🗺️</div><div class="feature-title">Real-Time Need Map</div><p class="feature-desc">An interactive Leaflet.js map displays shelter locations alongside their current, time-sensitive donation needs — clustered for clarity and updated dynamically as needs change.</p></div>
-      <div class="feature-card"><div class="feature-icon">🎟️</div><div class="feature-title">Request Verification System</div><p class="feature-desc">Homeless individuals submit specific needs through help centers, which issue collection tickets. Donations are matched to real, verified requests — not guesswork.</p></div>
-      <div class="feature-card"><div class="feature-icon">🏅</div><div class="feature-title">Gamified Engagement</div><p class="feature-desc">Friends leaderboards, milestone achievement badges, and a community heat map keep donors motivated and celebrate impact — making giving feel meaningful and social.</p></div>
-      <div class="feature-card"><div class="feature-icon">📋</div><div class="feature-title">Donation Tracking Dashboard</div><p class="feature-desc">Donors can view all their in-progress commitments in one place, with drop-off time windows clearly displayed so nothing slips through the cracks.</p></div>
+      <div class="feature-card"><div class="feature-icon">🗺️</div><div class="feature-title">Live Needs Near You</div><p class="feature-desc">The Give tab shows real, time-boxed needs on a map and in a list sorted by urgency, filtered by a travel distance you pick (1–50 miles). Expand the map to full screen and recenter on yourself anytime.</p></div>
+      <div class="feature-card"><div class="feature-icon">🤝</div><div class="feature-title">Pledges That Add Up</div><p class="feature-desc">Donors pledge part of a need, and the database won't let pledges exceed what's still needed. Drop-off reminders keep pledges on track, and stale ones expire automatically every hour.</p></div>
+      <div class="feature-card"><div class="feature-icon">📷</div><div class="feature-title">QR Code Check-In</div><p class="feature-desc">Each pledge has a check-in code. Staff scan it at drop-off (even with a phone's regular camera) to mark it received, and only received donations count toward badges and stats.</p></div>
+      <div class="feature-card"><div class="feature-icon">🏠</div><div class="feature-title">Tools for Organizations</div><p class="feature-desc">Shelters register for admin approval, invite staff with codes, post needs from drafts, set needs to repeat on any schedule, and follow progress on a dashboard and public organization page.</p></div>
+      <div class="feature-card"><div class="feature-icon">🏅</div><div class="feature-title">Giving Worth Celebrating</div><p class="feature-desc">Six milestone badges, a leaderboard you can opt out of, a community heat map, and a "year in giving" recap make impact visible without making it pushy.</p></div>
+      <div class="feature-card"><div class="feature-icon">🔗</div><div class="feature-title">Share &amp; Follow</div><p class="feature-desc">Share any need with a link that opens a public page for friends without the app, and follow organizations to keep their needs at the top of your list.</p></div>
     </div>
   </div>
 </section>
@@ -397,26 +400,27 @@ footer a:hover { color: var(--amber-light); }
     <p class="section-label">How it works</p>
     <h2 class="section-title">From intention to <em>action</em><br>in four simple steps.</h2>
     <div class="steps">
-      <div class="step"><div class="step-num">01</div><div class="step-title">Choose what to give</div><p class="step-desc">Select food, water, or clothing from the category menu on the map screen.</p></div>
-      <div class="step"><div class="step-num">02</div><div class="step-title">See nearby needs</div><p class="step-desc">Browse a list of shelters near you sorted by distance, each with specific, real-time requests.</p></div>
-      <div class="step"><div class="step-num">03</div><div class="step-title">Commit to help</div><p class="step-desc">Choose how many people you can assist and submit your commitment — you'll get a time window for drop-off.</p></div>
-      <div class="step"><div class="step-num">04</div><div class="step-title">Track your impact</div><p class="step-desc">See your donation in-progress, earn badges, and climb the community leaderboard.</p></div>
+      <div class="step"><div class="step-num">01</div><div class="step-title">A need is posted</div><p class="step-desc">An approved organization posts something specific, like "40 pairs of new socks, drop off Tue 4–7pm."</p></div>
+      <div class="step"><div class="step-num">02</div><div class="step-title">Neighbors pledge</div><p class="step-desc">Donors nearby pledge part of it. Pledges can never exceed what's still needed.</p></div>
+      <div class="step"><div class="step-num">03</div><div class="step-title">Drop it off</div><p class="step-desc">The donor brings the items during the drop-off window and shows their check-in code.</p></div>
+      <div class="step"><div class="step-num">04</div><div class="step-title">Impact is counted</div><p class="step-desc">Staff mark the pledge received, and it counts toward the donor's badges, the leaderboard and community stats.</p></div>
     </div>
   </div>
 </section>
 
 <section id="demo">
   <div class="container">
-    <p class="section-label">Live Demo</p>
+    <p class="section-label">Live App</p>
     <h2 class="section-title">Try it <em>right here.</em></h2>
-    <p class="section-sub">The full app runs in your browser — no install needed. Select a donation category on the map, pick a shelter, commit to helping, and explore your profile and leaderboard.</p>
-    <a class="demo-link" href="https://roopa-srinivas.github.io/BoostYourCommunity/app.html" target="_blank">Open live app →</a>
+    <p class="section-sub">The real app runs in your browser, with the same account and data as the phone version. Sample organizations are fictional, so feel free to explore.</p>
+    <a class="demo-link" href="https://roopa-srinivas.github.io/BoostYourCommunity/app/" target="_blank">Open the live app →</a>
     <div class="demo-steps">
-      <div class="demo-step"><div class="demo-step-num">1</div><h4>Open the map</h4><p>You'll land on the Give tab with a live map of San Francisco showing donation need clusters.</p></div>
-      <div class="demo-step"><div class="demo-step-num">2</div><h4>Choose a category</h4><p>Select food, water, or clothing from the dropdown to see nearby shelters with specific needs.</p></div>
-      <div class="demo-step"><div class="demo-step-num">3</div><h4>Pick a location & commit</h4><p>Tap a shelter, choose how many people you can help, and submit. You'll get a drop-off window.</p></div>
-      <div class="demo-step"><div class="demo-step-num">4</div><h4>Explore your profile</h4><p>Switch to the Profile tab to see badges, the friends leaderboard, in-progress donations, and the community heat map.</p></div>
+      <div class="demo-step"><div class="demo-step-num">1</div><h4>Make an account</h4><p>Sign up with an email and password, then enter the 6-digit code we email you. A quick walkthrough shows how the app works (reopen it anytime from the ? on Give).</p></div>
+      <div class="demo-step"><div class="demo-step-num">2</div><h4>Find a need</h4><p>Set your travel distance on the Give tab and browse needs on the map or in the list.</p></div>
+      <div class="demo-step"><div class="demo-step-num">3</div><h4>Pledge &amp; check in</h4><p>Pledge what you can bring, then find your drop-off window and check-in code under Pledges.</p></div>
+      <div class="demo-step"><div class="demo-step-num">4</div><h4>See the bigger picture</h4><p>Visit Community for the heat map and leaderboard, and Profile for badges and your year in giving.</p></div>
     </div>
+    <p class="section-sub" style="margin-top:2rem;">Curious where it started? The <a href="https://roopa-srinivas.github.io/BoostYourCommunity/app.html" target="_blank" style="color:var(--amber);">original clickable prototype</a> is still online.</p>
   </div>
 </section>
 
@@ -425,15 +429,17 @@ footer a:hover { color: var(--amber-light); }
     <p class="section-label">Tech Stack</p>
     <h2 class="section-title">Built with <em>purpose-fit</em> tools.</h2>
     <div class="tech-grid">
-      <div class="tech-pill">🌐 HTML5</div>
-      <div class="tech-pill">🎨 CSS3</div>
-      <div class="tech-pill">⚡ JavaScript (Vanilla)</div>
-      <div class="tech-pill">💨 Tailwind CSS</div>
-      <div class="tech-pill">🗺️ Leaflet.js</div>
-      <div class="tech-pill">📍 Leaflet.markercluster</div>
-      <div class="tech-pill">🎭 DiceBear API</div>
+      <div class="tech-pill">📱 React Native + Expo</div>
+      <div class="tech-pill">🔷 TypeScript</div>
+      <div class="tech-pill">⚡ Supabase</div>
+      <div class="tech-pill">🐘 Postgres + PostGIS</div>
+      <div class="tech-pill">🔒 Row Level Security</div>
+      <div class="tech-pill">⏰ pg_cron</div>
+      <div class="tech-pill">🗺️ Leaflet + OpenStreetMap</div>
+      <div class="tech-pill">✅ GitHub Actions CI</div>
       <div class="tech-pill">🚀 GitHub Pages</div>
     </div>
+    <p class="section-sub" style="margin-top:2rem;">Every change goes through a pull request, with type checks, lint and database behavior checks required to pass before merging.</p>
   </div>
 </section>
 
@@ -441,7 +447,7 @@ footer a:hover { color: var(--amber-light); }
   <div class="container">
     <p class="section-label">Open Source</p>
     <h2 class="section-title">Want to explore or <em>build on it?</em></h2>
-    <p>This project is fully open source. Check out the code, fork it, or reach out to collaborate on making it even better for communities everywhere.</p>
+    <p>The app is heading toward a pilot with a real shelter. The code is fully open source: check it out, fork it, or reach out to collaborate, especially if you work with a shelter or help center.</p>
     <div class="cta-buttons">
       <a class="btn btn-dark" href="https://github.com/roopa-srinivas/BoostYourCommunity" target="_blank">View on GitHub →</a>
       <a class="btn btn-outline-dark" href="mailto:roopasrinivas@berkeley.edu">Get in Touch</a>
