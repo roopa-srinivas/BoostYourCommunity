@@ -67,7 +67,7 @@ nav {
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--border);
 }
-.nav-logo { font-family: var(--display); font-size: 1.2rem; color: var(--text); text-decoration: none; }
+.nav-logo { font-family: var(--display); font-size: 1.2rem; color: var(--text); text-decoration: none; white-space: nowrap; }
 .nav-links { display: flex; gap: 1.75rem; list-style: none; align-items: center; }
 .nav-links a { white-space: nowrap; font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; transition: color 0.2s; }
 .nav-links a:hover { color: var(--tint); }
@@ -260,6 +260,13 @@ footer a { color: var(--text-secondary); }
 .nav-left { display: flex; align-items: center; gap: 1rem; min-width: 0; }
 .nav-back { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.8rem; font-weight: 500; color: var(--text-secondary); text-decoration: none; padding: 0.35rem 0.85rem; border: 1px solid var(--border); border-radius: 999px; white-space: nowrap; transition: color 0.2s, border-color 0.2s; }
 .nav-back:hover { color: var(--tint); border-color: var(--tint); }
+/* Between phone and desktop widths, drop the in-page links so the title stays on one line. */
+@media (max-width: 1000px) {
+  .nav-links li.section-link { display: none; }
+}
+@media (min-width: 701px) and (max-width: 1000px) {
+  nav { padding: 1rem 1.5rem; }
+}
 @media (max-width: 700px) {
   .nav-back .long { display: none; }
   .nav-logo { white-space: nowrap; font-size: 1.05rem; }
@@ -276,9 +283,9 @@ footer a { color: var(--text-secondary); }
     <a class="nav-logo" href="#">boost your community</a>
   </div>
   <ul class="nav-links">
-    <li class="hide-sm"><a href="#features">Features</a></li>
-    <li class="hide-sm"><a href="#how">How it works</a></li>
-    <li class="hide-sm"><a href="#tech">Tech stack</a></li>
+    <li class="hide-sm section-link"><a href="#features">Features</a></li>
+    <li class="hide-sm section-link"><a href="#how">How it works</a></li>
+    <li class="hide-sm section-link"><a href="#tech">Tech stack</a></li>
     <li class="hide-sm"><a href="https://roopa-srinivas.github.io/BoostYourCommunity/app/" target="_blank">Open the app</a></li>
     <li><a href="https://github.com/roopa-srinivas/BoostYourCommunity" target="_blank">GitHub →</a></li>
   </ul>
